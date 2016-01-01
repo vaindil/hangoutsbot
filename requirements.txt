@@ -1,6 +1,7 @@
 git+https://github.com/hangoutsbot/hangups.git
 appdirs
 asyncio
+feedparser
 jsonrpclib-pelix
 pushbullet.py
 beautifulsoup4

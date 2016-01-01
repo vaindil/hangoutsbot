@@ -1,10 +1,9 @@
-import asyncio, datetime, logging, time
-
-import hangups
+import asyncio
+import datetime
+import logging
+import time
 
 import plugins
-
-import threadmanager
 
 logger = logging.getLogger(__name__)
 
