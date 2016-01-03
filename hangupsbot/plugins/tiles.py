@@ -16,7 +16,7 @@ def tiles(bot, event, *args):
     feedna = feedparser.parse("https://wazestatus.wordpress.com/category/main/north-america-tile-updates/feed/")
     feedintl = feedparser.parse("https://wazestatus.wordpress.com/category/main/international-tile-updates/feed/")
 
-    reg = re.compile("(January|February|March|April|May|June|July|August|September|October|November|December \d{1,2}, \d{4} \d{2}:\d{2} UTC)")
+    reg = re.compile("((January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4} \d{2}:\d{2} UTC)")
     nadate = reg.search(feedna.entries[0].content[0].value).groups(1)
     intldate = reg.search(feedintl.entries[0].content[0].value).groups(1)
 
