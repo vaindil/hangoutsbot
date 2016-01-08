@@ -221,6 +221,7 @@ def mention(bot, event, *args):
 
             if u.id_.chat_id == event.user.id_.chat_id and not noisy_mention_test:
                 """prevent initiating user from mentioning themselves"""
+                dont_mention_self = True
                 logger.debug("suppressing @self for {} ({})".format(event.user.full_name, event.user.id_.chat_id))
                 continue
 
@@ -260,7 +261,7 @@ def mention(bot, event, *args):
         logger.info("prioritising multiple case-sensitive fragment match for {}".format(exact_fragment_matches[0].full_name))
         mention_list = exact_fragment_matches
 
-    if len(mention_list) > 1 and username_lower != "all":
+    if len(mention_list) > 1 and username_lower != "all" and not dont_mention_self:
 
         send_multiple_user_message = True
 
@@ -283,6 +284,22 @@ def mention(bot, event, *args):
                 yield from bot.coro_send_message(conv_1on1_initiator, text_html)
 
         logger.warning("@{} not sent due to multiple recipients".format(username_lower))
+        return #SHORT-CIRCUIT
+    elif len(mention_list) == 0 and username_lower != "all":
+        send_multiple_user_message = True
+        if bot.memory.exists(['user_data', event.user.id_.chat_id, "mentionmultipleusermessage"]):
+            send_multiple_user_message = bot.memory.get_by_path(['user_data', event.user.id_.chat_id, "mentionmultipleusermessage"])
+
+        if send_multiple_user_message or noisy_mention_test:
+            logger.debug("MENTION: inside memory.exists")
+            if conv_1on1_initiator:
+                logger.debug("MENTION: inside conv_1on1")
+                text_html = _('Your mention @{} in {} did not match any users.').format(username, conversation_name)
+                text_html += '<br /><br /><em>To toggle this message on/off, use <b>/bot bemorespecific</b></em>'
+
+                yield from bot.coro_send_message(conv_1on1_initiator, text_html)
+
+        logger.warning("@{} not sent due to no matches".format(username_lower))
         return #SHORT-CIRCUIT
 
     """support for reprocessor

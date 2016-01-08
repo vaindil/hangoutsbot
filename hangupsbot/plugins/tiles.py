@@ -40,4 +40,4 @@ def tiles(bot, event, *args):
                 hangups.ChatMessageSegment("\n", hangups.SegmentType.LINE_BREAK),
                 hangups.ChatMessageSegment("Full information: https://wazestatus.wordpress.com")]
 
-    yield from bot.coro_send_message(event.conv, segments)
+    yield from bot.coro_send_message(event.conv, segments, context={ "parser": True })
