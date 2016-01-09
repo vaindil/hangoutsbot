@@ -7,7 +7,6 @@ pushbullet.py
 beautifulsoup4
 requests
 goslate
-wikipedia
 wolframalpha
 git+https://github.com/loisaidasam/pyslack.git
 git+https://github.com/carpedm20/emoji
