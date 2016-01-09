@@ -5,6 +5,7 @@ feedparser
 jsonrpclib-pelix
 pushbullet.py
 beautifulsoup4
+requests
 goslate
 wikipedia
 wolframalpha

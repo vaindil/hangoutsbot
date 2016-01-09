@@ -9,10 +9,6 @@ import plugins
 logger = logging.getLogger(__name__)
 
 
-def _initialise(bot):
-    plugins.register_user_command(["lookup"])
-
-
 def lookup(bot, event, *args):
     """find keywords in a specified spreadsheet"""
 
