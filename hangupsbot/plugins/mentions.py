@@ -184,6 +184,7 @@ def mention(bot, event, *args):
     exact_nickname_matches = []
     exact_fragment_matches = []
     mention_list = []
+    dont_mention_self = False
     for u in users_in_chat:
 
         # mentions also checks nicknames if one is configured

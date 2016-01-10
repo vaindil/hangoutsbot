@@ -11,3 +11,4 @@ wolframalpha
 git+https://github.com/loisaidasam/pyslack.git
 git+https://github.com/carpedm20/emoji
 selenium
+git+ssh://git@github.com/seatgeek/fuzzywuzzy.git@0.8.0#egg=fuzzywuzzy
