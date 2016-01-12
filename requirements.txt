@@ -1,14 +1,23 @@
+# BOT DEPENDENCIES #
 git+https://github.com/hangoutsbot/hangups.git
 appdirs
 asyncio
 feedparser
 jsonrpclib-pelix
-pushbullet.py
+
+# PLUGIN DEPENDENCIES #
 beautifulsoup4
 requests
 goslate
+pushbullet.py # mentions
+goslate # translations
+wikipedia
 wolframalpha
-git+https://github.com/loisaidasam/pyslack.git
+git+https://github.com/loisaidasam/pyslack.git # slack
 git+https://github.com/carpedm20/emoji
 selenium
 jellyfish
+selenium # screenshots
+google-api-python-client # for spotify
+spotipy
+slackclient >=0.16 # slackrtm (includes websockets)
