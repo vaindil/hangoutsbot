@@ -39,12 +39,24 @@ def _handle_keyword(bot, event, command):
         try:
             if _internal.keywords[user.id_.chat_id] and not user.id_.chat_id in event.user.id_.chat_id:
                 for phrase in _internal.keywords[user.id_.chat_id]:
-                    regexphrase = "\\b" + phrase + "\\b"
-                    if re.search(regexphrase, event.text, re.IGNORECASE):
+                    if _words_in_text(phrase, event.text):
                         yield from _send_notification(bot, event, phrase, user)
         except KeyError:
             # User probably hasn't subscribed to anything
             continue
+
+
+def _words_in_text(word, text):
+    """Return True if word is in text"""
+
+    if word.startswith("regex:"):
+        word = word[6:]
+    else:
+        word = re.escape(word)
+
+    regexword = "(?<!\w)" + word + "(?!\w)"
+
+    return True if re.search(regexword, text, re.IGNORECASE) else False
 
 
 def _populate_keywords(bot, event):
