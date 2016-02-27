@@ -114,7 +114,7 @@ class watermark_updater:
             logger.debug("no more conversations to watermark")
             return
 
-        logger.info("watermarking {}".format(conv_id))
+        # logger.info("watermarking {}".format(conv_id))
 
         self._current_convid = conv_id
 
