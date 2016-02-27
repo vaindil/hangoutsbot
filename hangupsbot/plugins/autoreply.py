@@ -1,4 +1,4 @@
-import asyncio, re, logging, json, random
+import asyncio, re, logging, json, random, os, aiohttp, io
 
 import hangups
 
@@ -92,6 +92,16 @@ def send_reply(bot, event, message):
                 return False
             values["guest"] = guest # add the guest as extra info
             envelopes.append((target_conv, message.format(**values)))
+
+    elif message.startswith("BOTIMAGE:"):
+        message = message[message.index(":")+1:].strip()
+        filename = os.path.basename(message)
+        r = yield from aiohttp.request('get', message)
+        raw = yield from r.read()
+        image_data = io.BytesIO(raw)
+        image_id = yield from bot._client.upload_image(image_data, filename=filename)
+        yield from bot.coro_send_message(event.conv.id_, None, image_id=image_id)
+        return True
 
     else:
         envelopes.append((event.conv, message.format(**values)))
