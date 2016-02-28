@@ -21,3 +21,5 @@ selenium # screenshots
 google-api-python-client # for spotify
 spotipy
 slackclient >=0.16 # slackrtm (includes websockets)
+textblob
+python_dateutil # gitlab sink
