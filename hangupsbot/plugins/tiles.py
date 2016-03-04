@@ -38,6 +38,8 @@ def tiles(bot, event, *args):
                 hangups.ChatMessageSegment(intlposteddate.strftime("%b %d, %Y %H:%M UTC") + ")", is_italic=True),
                 hangups.ChatMessageSegment("\n", hangups.SegmentType.LINE_BREAK),
                 hangups.ChatMessageSegment("\n", hangups.SegmentType.LINE_BREAK),
-                hangups.ChatMessageSegment("Full information: https://wazestatus.wordpress.com")]
+                hangups.ChatMessageSegment("Full information: "),
+                hangups.ChatMessageSegment("https://wazestatus.wordpress.com",
+                                           link_target="https://wazestatus.wordpress.com")]
 
     yield from bot.coro_send_message(event.conv, segments, context={"parser": True})

@@ -42,10 +42,27 @@ def profile(bot, event, *args):
         yield from bot.coro_send_message(event.conv, "<b>profile:</b> username cannot contain a space")
         return
 
+    '''
     rstr = "<b>Links for " + un + ":</b><br />"
     rstr += "<a href=\"https://www.waze.com/user/editor/" + un + "\">Editor profile</a><br />"
     rstr += "<a href=\"https://www.waze.com/forum/memberlist.php?mode=viewprofile&un=" + un + "\">Forum profile</a><br />"
     rstr += "<a href=\"https://wiki.waze.com/wiki/User:" + un + "\">Wiki profile</a><br />"
     rstr += "<i>These links will not work if the profile does not exist.</i>"
+    '''
 
-    yield from bot.coro_send_message(event.conv, rstr)
+    segments = [hangups.ChatMessageSegment("Links for " + un + ": ", is_bold=True),
+                hangups.ChatMessageSegment("\n", hangups.SegmentType.LINE_BREAK),
+                hangups.ChatMessageSegment("Editor profile",
+                                           link_target="https://www.waze.com/user/editor/" + un),
+                hangups.ChatMessageSegment("\n", hangups.SegmentType.LINE_BREAK),
+                hangups.ChatMessageSegment("Forum profile",
+                                           link_target="https://www.waze.com/forum/memberlist.php?mode=viewprofile&un=" + un),
+                hangups.ChatMessageSegment("\n", hangups.SegmentType.LINE_BREAK),
+                hangups.ChatMessageSegment("Wiki profile",
+                                           link_target="https://wiki.waze.com/wiki/User:" + un),
+                hangups.ChatMessageSegment("\n", hangups.SegmentType.LINE_BREAK),
+                hangups.ChatMessageSegment("These links will not work if the profile does not exist.", is_italic=True)]
+
+    yield from bot.coro_send_message(event.conv, segments, context={"parser": True})
+
+    # yield from bot.coro_send_message(event.conv, rstr)
