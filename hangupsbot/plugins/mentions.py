@@ -120,7 +120,7 @@ def mention(bot, event, *args):
             #else:
                 #logger.debug("quidproquo: user {} ({}) has 1-on-1".format(event.user.full_name, event.user.id_.chat_id))
         else:
-            logger.info("quidproquo: user {} ({}) has no 1-on-1".format(event.user.full_name, event.user.id_.chat_id))
+            #logger.info("quidproquo: user {} ({}) has no 1-on-1".format(event.user.full_name, event.user.id_.chat_id))
             if noisy_mention_test or bot.get_config_suboption(event.conv_id, 'mentionerrors'):
                 yield from bot.coro_send_message(
                     event.conv,
@@ -220,27 +220,27 @@ def mention(bot, event, *args):
 
             if u.is_self:
                 """bot cannot be @mentioned"""
-                logger.debug("suppressing bot mention by {} ({})".format(event.user.full_name, event.user.id_.chat_id))
+                #logger.debug("suppressing bot mention by {} ({})".format(event.user.full_name, event.user.id_.chat_id))
                 continue
 
             if u.id_.chat_id == event.user.id_.chat_id and username_lower == "all":
                 """prevent initiating user from receiving duplicate @all"""
-                logger.debug("suppressing @all for {} ({})".format(event.user.full_name, event.user.id_.chat_id))
+                #logger.debug("suppressing @all for {} ({})".format(event.user.full_name, event.user.id_.chat_id))
                 continue
 
             if u.id_.chat_id == event.user.id_.chat_id and not noisy_mention_test:
                 """prevent initiating user from mentioning themselves"""
-                logger.debug("suppressing @self for {} ({})".format(event.user.full_name, event.user.id_.chat_id))
+                #logger.debug("suppressing @self for {} ({})".format(event.user.full_name, event.user.id_.chat_id))
                 continue
 
             if u.id_.chat_id in mention_chat_ids:
                 """prevent most duplicate mentions (in the case of syncouts)"""
-                logger.debug("suppressing duplicate mention for {} ({})".format(event.user.full_name, event.user.id_.chat_id))
+                #logger.debug("suppressing duplicate mention for {} ({})".format(event.user.full_name, event.user.id_.chat_id))
                 continue
 
             if bot.memory.exists(["donotdisturb"]):
                 if _user_has_dnd(bot, u.id_.chat_id):
-                    logger.info("suppressing @mention for {} ({})".format(u.full_name, u.id_.chat_id))
+                    #logger.info("suppressing @mention for {} ({})".format(u.full_name, u.id_.chat_id))
                     user_tracking["ignored"].append(u.full_name)
                     continue
 
@@ -259,14 +259,14 @@ def mention(bot, event, *args):
 
     if len(exact_nickname_matches) == 1:
         """prioritise exact nickname matches"""
-        logger.info("prioritising nickname match for {}".format(exact_nickname_matches[0].full_name))
+        #logger.info("prioritising nickname match for {}".format(exact_nickname_matches[0].full_name))
         mention_list = exact_nickname_matches
     elif len(exact_fragment_matches) == 1:
         """prioritise case-sensitive fragment matches"""
-        logger.info("prioritising single case-sensitive fragment match for {}".format(exact_fragment_matches[0].full_name))
+        #logger.info("prioritising single case-sensitive fragment match for {}".format(exact_fragment_matches[0].full_name))
         mention_list = exact_fragment_matches
     elif len(exact_fragment_matches) > 1 and len(exact_fragment_matches) < len(mention_list):
-        logger.info("prioritising multiple case-sensitive fragment match for {}".format(exact_fragment_matches[0].full_name))
+        #logger.info("prioritising multiple case-sensitive fragment match for {}".format(exact_fragment_matches[0].full_name))
         mention_list = exact_fragment_matches
 
     if len(mention_list) > 1 and username_lower != "all":
@@ -291,7 +291,7 @@ def mention(bot, event, *args):
 
                 yield from bot.coro_send_message(conv_1on1_initiator, text_html)
 
-        logger.warning("@{} not sent due to multiple recipients".format(username_lower))
+        #logger.warning("@{} not sent due to multiple recipients".format(username_lower))
         return #SHORT-CIRCUIT
 
     """support for reprocessor
