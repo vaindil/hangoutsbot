@@ -22,7 +22,7 @@ def _handle_autoreply(bot, event, command):
         return
 
     if "autoreplies-disable" in bot.tags.useractive(event.user_id.chat_id, event.conv.id_):
-        logger.debug("explicitly disabled by tag for {} {}".format(event.user_id.chat_id, event.conv.id_))
+        # logger.debug("explicitly disabled by tag for {} {}".format(event.user_id.chat_id, event.conv.id_))
         return
 
     """Handle autoreplies to keywords in messages"""
@@ -57,13 +57,13 @@ def _handle_autoreply(bot, event, command):
             if isinstance(kwds, list):
                 for kw in kwds:
                     if _words_in_text(kw, event.text) or kw == "*":
-                        logger.info("matched chat: {}".format(kw))
+                        # logger.info("matched chat: {}".format(kw))
                         yield from send_reply(bot, event, message)
                         r = True
                         break
 
             elif event_type == kwds:
-                logger.info("matched event: {}".format(kwds))
+                # logger.info("matched event: {}".format(kwds))
                 yield from send_reply(bot, event, message)
                 r = True
 
@@ -78,12 +78,12 @@ def _handle_autoreply(bot, event, command):
             if isinstance(kwds, list):
                 for kw in kwds:
                     if _words_in_text(kw, event.text) or kw == "*":
-                        logger.info("matched chat: {}".format(kw))
+                        # logger.info("matched chat: {}".format(kw))
                         yield from send_reply(bot, event, message)
                         break
 
             elif event_type == kwds:
-                logger.info("matched event: {}".format(kwds))
+                # logger.info("matched event: {}".format(kwds))
                 yield from send_reply(bot, event, message)
 
 
