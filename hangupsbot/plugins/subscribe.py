@@ -79,7 +79,7 @@ def _send_notification(bot, event, phrase, user):
     """Alert a user that a keyword that they subscribed to has been used"""
 
     conversation_name = bot.conversations.get_name(event.conv)
-    logger.info("keyword '{}' in '{}' ({})".format(phrase, conversation_name, event.conv.id_))
+    #logger.info("keyword '{}' in '{}' ({})".format(phrase, conversation_name, event.conv.id_))
 
     """support for reprocessor
     override the source name by defining event._external_source"""
@@ -102,11 +102,11 @@ def _send_notification(bot, event, phrase, user):
                     phrase,
                     conversation_name,
                     event.text))
-            logger.info("{} ({}) alerted via 1on1 ({})".format(user.full_name, user.id_.chat_id, conv_1on1.id_))
-        else:
-            logger.info("{} ({}) has dnd".format(user.full_name, user.id_.chat_id))
-    else:
-        logger.warning("user {} ({}) could not be alerted via 1on1".format(user.full_name, user.id_.chat_id))
+            #logger.info("{} ({}) alerted via 1on1 ({})".format(user.full_name, user.id_.chat_id, conv_1on1.id_))
+        #else:
+            #logger.info("{} ({}) has dnd".format(user.full_name, user.id_.chat_id))
+    #else:
+        #logger.warning("user {} ({}) could not be alerted via 1on1".format(user.full_name, user.id_.chat_id))
 
 
 def subscribe(bot, event, *args):

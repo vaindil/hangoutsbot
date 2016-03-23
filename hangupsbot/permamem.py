@@ -379,13 +379,13 @@ class conversation_memory:
                 users_changed = True
 
         if len(_users_to_fetch) > 0:
-            logger.warning("unknown users returned from {} ({}): {}".format(conv_title, conv.id_, _users_to_fetch))
+            #logger.warning("unknown users returned from {} ({}): {}".format(conv_title, conv.id_, _users_to_fetch))
             yield from self.get_users_from_query(_users_to_fetch)
 
         """store the conversation type: GROUP, ONE_TO_ONE"""
         if conv._conversation.type_ == hangups.schemas.ConversationType.GROUP:
             memory["type"] = "GROUP"
-        else: 
+        else:
             # conv._conversation.type_ == hangups.schemas.ConversationType.STICKY_ONE_TO_ONE
             memory["type"] = "ONE_TO_ONE"
 

@@ -64,7 +64,7 @@ def mention(bot, event, *args):
     """allow mentions to be disabled via global or per-conversation config"""
     config_mentions_enabled = False if bot.get_config_suboption(event.conv.id_, 'mentions.enabled') is False else True
     if not config_mentions_enabled:
-        logger.info("mentions explicitly disabled by config for {}".format(event.conv_id))
+        #logger.info("mentions explicitly disabled by config for {}".format(event.conv_id))
         return
 
     """minimum length check for @mention"""
@@ -73,7 +73,7 @@ def mention(bot, event, *args):
         minimum_length = 2
     username = args[0].strip()
     if len(username) < minimum_length:
-        logger.debug("@mention from {} ({}) too short (== '{}')".format(event.user.full_name, event.user.id_.chat_id, username))
+        #logger.debug("@mention from {} ({}) too short (== '{}')".format(event.user.full_name, event.user.id_.chat_id, username))
         return
 
     users_in_chat = event.conv.users
@@ -91,7 +91,7 @@ def mention(bot, event, *args):
                         if event.conv_id is not syncedroom:
                             users_in_chat += bot.get_users_in_conversation(syncedroom)
                     users_in_chat = list(set(users_in_chat)) # make unique
-                    logger.debug("@mention in a syncroom: {} user(s) present".format(len(users_in_chat)))
+                    #logger.debug("@mention in a syncroom: {} user(s) present".format(len(users_in_chat)))
                     break
 
     """
@@ -110,15 +110,15 @@ def mention(bot, event, *args):
     if bot.get_config_option("mentionquidproquo"):
         if conv_1on1_initiator:
             if initiator_has_dnd:
-                logger.info("quidproquo: user {} ({}) has DND active".format(event.user.full_name, event.user.id_.chat_id))
+                #logger.info("quidproquo: user {} ({}) has DND active".format(event.user.full_name, event.user.id_.chat_id))
                 if noisy_mention_test or bot.get_config_suboption(event.conv_id, 'mentionerrors'):
                     yield from bot.coro_send_message(
                         event.conv,
                         _("<b>{}</b>, you cannot @mention anyone until your DND status is toggled off.").format(
                             event.user.full_name))
                 return
-            else:
-                logger.debug("quidproquo: user {} ({}) has 1-on-1".format(event.user.full_name, event.user.id_.chat_id))
+            #else:
+                #logger.debug("quidproquo: user {} ({}) has 1-on-1".format(event.user.full_name, event.user.id_.chat_id))
         else:
             logger.info("quidproquo: user {} ({}) has no 1-on-1".format(event.user.full_name, event.user.id_.chat_id))
             if noisy_mention_test or bot.get_config_suboption(event.conv_id, 'mentionerrors'):
@@ -143,7 +143,7 @@ def mention(bot, event, *args):
     """
 
     conversation_name = bot.conversations.get_name(event.conv)
-    logger.info("@mention '{}' in '{}' ({})".format(username, conversation_name, event.conv.id_))
+    #logger.info("@mention '{}' in '{}' ({})".format(username, conversation_name, event.conv.id_))
     username_lower = username.lower()
     username_upper = username.upper()
 
@@ -152,7 +152,7 @@ def mention(bot, event, *args):
         if not bot.get_config_suboption(event.conv.id_, 'mentionall'):
 
             """global toggle is off/not set, check admins"""
-            logger.debug("@all in {}: disabled/unset global/per-conversation".format(event.conv.id_))
+            #logger.debug("@all in {}: disabled/unset global/per-conversation".format(event.conv.id_))
             admins_list = bot.get_config_suboption(event.conv_id, 'admins')
             if event.user_id.chat_id not in admins_list:
 
@@ -182,12 +182,12 @@ def mention(bot, event, *args):
                             _("<b>{}</b> blocked from using <i>@all</i>").format(
                                 event.user.full_name))
                     return
-                else:
-                    logger.info("@all in {}: allowed, {} ({}) is whitelisted".format(event.conv.id_, event.user.full_name, event.user.id_.chat_id))
-            else:
-                logger.info("@all in {}: allowed, {} ({}) is an admin".format(event.conv.id_, event.user.full_name, event.user.id_.chat_id))
-        else:
-            logger.info("@all in {}: enabled global/per-conversation".format(event.conv.id_))
+                #else:
+                    #logger.info("@all in {}: allowed, {} ({}) is whitelisted".format(event.conv.id_, event.user.full_name, event.user.id_.chat_id))
+            #else:
+                #logger.info("@all in {}: allowed, {} ({}) is an admin".format(event.conv.id_, event.user.full_name, event.user.id_.chat_id))
+        #else:
+            #logger.info("@all in {}: enabled global/per-conversation".format(event.conv.id_))
 
     """generate a list of users to be @mentioned"""
     exact_nickname_matches = []
@@ -216,7 +216,7 @@ def mention(bot, event, *args):
                 username_lower == nickname_lower or
                 username in u.full_name.split(" ")):
 
-            logger.info("user {} ({}) is present".format(u.full_name, u.id_.chat_id))
+            #logger.info("user {} ({}) is present".format(u.full_name, u.id_.chat_id))
 
             if u.is_self:
                 """bot cannot be @mentioned"""
@@ -347,7 +347,7 @@ def mention(bot, event, *args):
                             event.text)) # prevent internal parser from removing <tags>
                     mention_chat_ids.append(u.id_.chat_id)
                     user_tracking["mentioned"].append(u.full_name)
-                    logger.info("{} ({}) alerted via 1on1 ({})".format(u.full_name, u.id_.chat_id, conv_1on1.id_))
+                    #logger.info("{} ({}) alerted via 1on1 ({})".format(u.full_name, u.id_.chat_id, conv_1on1.id_))
                 else:
                     user_tracking["failed"]["one2one"].append(u.full_name)
                     if bot.get_config_suboption(event.conv_id, 'mentionerrors'):

@@ -254,12 +254,12 @@ class HangupsBot(object):
                 if conv.id_ not in check_ids:
                     missing.append(conv.id_)
 
-            logger.info("list_conversations: "
-                         "{} from permamem, "
-                         "{} from hangups - "
-                         "discrepancies: {}".format( len(convs),
-                                                     len(hangups_conv_list),
-                                                     ", ".join(missing) or "none" ))
+            #logger.info("list_conversations: "
+            #             "{} from permamem, "
+            #             "{} from hangups - "
+            #             "discrepancies: {}".format( len(convs),
+            #                                         len(hangups_conv_list),
+            #                                         ", ".join(missing) or "none" ))
 
         except Exception as e:
             logger.exception("LIST_CONVERSATIONS: failed")
@@ -298,7 +298,7 @@ class HangupsBot(object):
                 _cached = self.memory.get_by_path(["user_data", chat_id, "_hangups"])
 
                 hangups_user = hangups.user.User(
-                    UserID, 
+                    UserID,
                     _cached["full_name"],
                     _cached["first_name"],
                     _cached["photo_url"],
@@ -397,7 +397,7 @@ class HangupsBot(object):
         if self.memory.exists(["user_data", chat_id, "1on1"]):
             conversation_id = self.memory.get_by_path(["user_data", chat_id, "1on1"])
             conversation = FakeConversation(self._client, conversation_id)
-            logger.info(_("memory: {} is 1on1 with {}").format(conversation_id, chat_id))
+            #logger.info(_("memory: {} is 1on1 with {}").format(conversation_id, chat_id))
         else:
             for c in self.list_conversations():
                 if len(c.users) == 2:
@@ -425,7 +425,7 @@ class HangupsBot(object):
 
         if self.memory.exists(["user_data", chat_id, "optout"]):
             if self.memory.get_by_path(["user_data", chat_id, "optout"]):
-                logger.info("get_1on1: user {} has optout".format(chat_id))
+                #logger.info("get_1on1: user {} has optout".format(chat_id))
                 return False
 
         conversation = None
@@ -433,14 +433,14 @@ class HangupsBot(object):
         if self.memory.exists(["user_data", chat_id, "1on1"]):
             conversation_id = self.memory.get_by_path(["user_data", chat_id, "1on1"])
             conversation = FakeConversation(self._client, conversation_id)
-            logger.info("get_1on1: remembered {} for {}".format(conversation_id, chat_id))
+            #logger.info("get_1on1: remembered {} for {}".format(conversation_id, chat_id))
         else:
             autocreate_1to1 = True if self.get_config_option('autocreate-1to1') is not False else False
             if autocreate_1to1:
                 """create a new 1-to-1 conversation with the designated chat id
                 send an introduction message as well to the user as part of the chat creation
                 """
-                logger.info("get_1on1: creating 1to1 with {}".format(chat_id))
+                #logger.info("get_1on1: creating 1to1 with {}".format(chat_id))
                 try:
                     introduction = self.get_config_option('bot_introduction')
                     if not introduction:
@@ -459,7 +459,7 @@ class HangupsBot(object):
                 this creates a conversation entry in self._conv_list (even if the bot receives
                 a chat invite only - a message sent on the channel auto-accepts the invite)
                 """
-                logger.info("get_1on1: searching for existing 1to1 with {}".format(chat_id))
+                #logger.info("get_1on1: searching for existing 1to1 with {}".format(chat_id))
                 for c in self.list_conversations():
                     if len(c.users) == 2:
                         for u in c.users:
@@ -469,7 +469,7 @@ class HangupsBot(object):
 
             if conversation is not None:
                 # remember the conversation so we don't have to do this again
-                logger.info("get_1on1: determined {} for {}".format(conversation.id_, chat_id))
+                #logger.info("get_1on1: determined {} for {}".format(conversation.id_, chat_id))
                 self.initialise_memory(chat_id, "user_data")
                 self.memory.set_by_path(["user_data", chat_id, "1on1"], conversation.id_)
                 self.memory.save()
@@ -577,7 +577,7 @@ class HangupsBot(object):
 
         event = ConversationEvent(self, conv_event)
 
-        yield from self.conversations.update(self._conv_list.get(conv_event.conversation_id), 
+        yield from self.conversations.update(self._conv_list.get(conv_event.conversation_id),
                                              source="event")
 
         if isinstance(conv_event, hangups.ChatMessageEvent):
@@ -965,7 +965,7 @@ def main():
                         help=_('show program\'s version number and exit'))
     args = parser.parse_args()
 
-    
+
 
     # Create all necessary directories.
     for path in [args.log, args.cookies, args.config, args.memory]:
