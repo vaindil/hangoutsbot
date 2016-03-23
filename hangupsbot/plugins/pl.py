@@ -15,29 +15,41 @@ def _initialise(bot):
 def pl(bot, event, *args):
     inp = ' '.join(args).strip()
     inter = []
+    htc = re.compile('http(?:s)?:\/\/')
     if not inp:
         yield from bot.coro_send_message(event.conv_id, '<b>Permalink:</b> no message was provided')
         return
 
-    fall = re.findall('http(?:s)?:\/\/(?:www\.)?goo\.gl\/\S+', inp)
+    fall = re.findall('(?:http(?:s)?:\/\/)?(?:www\.)?goo\.gl\/\S+', inp)
     if fall:
         for url in fall:
+            if htc.match(url) is None:
+                url = 'https://' + url
             inp += ' ' + requests.get(url.strip()).url
 
-    fall = re.findall('http(?:s)?:\/\/(?:www\.)?j\.mp\/\S+', inp)
+    fall = re.findall('(?:http(?:s)?:\/\/)?(?:www\.)?j\.mp\/\S+', inp)
     if fall:
         for url in fall:
+            print('URL: ' + url)
+            if htc.match(url) is None:
+                url = 'https://' + url
             inp += ' ' + requests.get(url.strip()).url
 
-    fall = re.findall('http(?:s)?:\/\/(?:www\.)?bit\.ly\/\S+', inp)
+    fall = re.findall('(?:http(?:s)?:\/\/)?(?:www\.)?bit\.ly\/\S+', inp)
     if fall:
         for url in fall:
+            if htc.match(url) is None:
+                url = 'https://' + url
             inp += ' ' + requests.get(url.strip()).url
 
-    fall = re.findall('http(?:s):\/\/(?:www|editor-beta)\.waze\.com\/editor\S+', inp)
+    fall = re.findall('(?:http(?:s):\/\/)?(?:www\.|editor-beta\.)?waze\.com\/editor\S+', inp)
     if fall:
         for url in fall:
-            inter.append(requests.get(url.strip()).url)
+            if htc.match(url) is None:
+                if not url.startswith('www.') and not url.startswith('editor-beta.'):
+                    url = 'www.' + url
+                url = 'https://' + url
+            inter.append(url)
 
     if inter is None or not inter:
         yield from bot.coro_send_message(event.conv_id, '<b>Permalink:</b> no PL found')
