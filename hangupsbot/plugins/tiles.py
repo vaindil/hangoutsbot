@@ -25,12 +25,12 @@ def tiles(bot, event, *args):
 
     reg = re.compile("((January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4} \d{2}:\d{2} UTC)")
 
-    for num in range(1, 4):
-        if reg.search(feedna.entries[num].content[0].value) is not None:
+    for num in range(0, 4):
+        if reg.search(feedna.entries[num].content[0].value) is not None and nadate is None:
             nadate = reg.search(feedna.entries[num].content[0].value).groups(1)
             naposteddate = datetime.fromtimestamp(mktime(feedna.entries[num].published_parsed))
 
-        if reg.search(feedintl.entries[num].content[0].value) is not None:
+        if reg.search(feedintl.entries[num].content[0].value) is not None and intldate is None:
             intldate = reg.search(feedintl.entries[num].content[0].value).groups(1)
             intlposteddate = datetime.fromtimestamp(mktime(feedintl.entries[num].published_parsed))
 
