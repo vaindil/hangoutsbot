@@ -1,5 +1,6 @@
 import logging
 import re
+import time
 from time import mktime
 from datetime import datetime
 
@@ -17,12 +18,31 @@ def _initialise(bot):
 def tiles(bot, event, *args):
     feedna = feedparser.parse("https://wazestatus.wordpress.com/category/main/north-america-tile-updates/feed/")
     feedintl = feedparser.parse("https://wazestatus.wordpress.com/category/main/international-tile-updates/feed/")
+    nadate = None
+    intldate = None
+    naposteddate = None
+    intlposteddate = None
 
     reg = re.compile("((January|February|March|April|May|June|July|August|September|October|November|December) \d{1,2}, \d{4} \d{2}:\d{2} UTC)")
-    nadate = reg.search(feedna.entries[0].content[0].value).groups(1)
-    intldate = reg.search(feedintl.entries[0].content[0].value).groups(1)
-    naposteddate = datetime.fromtimestamp(mktime(feedna.entries[0].published_parsed))
-    intlposteddate = datetime.fromtimestamp(mktime(feedintl.entries[0].published_parsed))
+
+    for num in range(1, 4):
+        if reg.search(feedna.entries[num].content[0].value) is not None:
+            nadate = reg.search(feedna.entries[num].content[0].value).groups(1)
+            naposteddate = datetime.fromtimestamp(mktime(feedna.entries[num].published_parsed))
+
+        if reg.search(feedintl.entries[num].content[0].value) is not None:
+            intldate = reg.search(feedintl.entries[num].content[0].value).groups(1)
+            intlposteddate = datetime.fromtimestamp(mktime(feedintl.entries[num].published_parsed))
+
+        if nadate is not None and intldate is not None:
+            break
+
+    if nadate is None:
+        nadate = ["(not found)"]
+        naposteddate = datetime(1, 1, 1)
+    if intldate is None:
+        intldate = ["(not found)"]
+        intlposteddate = datetime(1, 1, 1)
 
     segments = [hangups.ChatMessageSegment("NA: ", is_bold=True),
                 hangups.ChatMessageSegment(nadate[0]),
