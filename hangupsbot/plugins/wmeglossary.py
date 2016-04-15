@@ -12,6 +12,9 @@ def glossary(bot, event, *args):
     spjoin = " ".join(args)
     matches = {}
     url = "https://wiki.waze.com/wiki/Glossary"
+    if spjoin == "":
+        yield from bot.coro_send_message(event.conv, '<b>glossary</b> - look up a word or phrase in the wiki glossary at ' + url)
+        return
     r = requests.get(url).text
     page = BeautifulSoup(r, 'html.parser')
 
