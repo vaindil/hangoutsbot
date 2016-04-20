@@ -89,6 +89,7 @@ def _handle_autoreply(bot, event, command):
 
 @asyncio.coroutine
 def send_reply(bot, event, message):
+    base_image_path = bot.get_config_option("autoreply_images_local_path")
     values = { "event": event,
                "conv_title": bot.conversations.get_name( event.conv,
                                                          fallback_string=_("Unidentified Conversation") )}
@@ -123,9 +124,14 @@ def send_reply(bot, event, message):
     elif message.startswith("BOTIMAGE:"):
         message = message[message.index(":")+1:].strip()
         filename = os.path.basename(message)
-        r = yield from aiohttp.request('get', message)
-        raw = yield from r.read()
-        image_data = io.BytesIO(raw)
+        if message.startswith('http'):
+            r = yield from aiohttp.request('get', message)
+            raw = yield from r.read()
+            image_data = io.BytesIO(raw)
+        elif base_image_path:
+            with open(base_image_path + filename, 'rb') as f:
+                image_data = io.BytesIO(f.read())
+
         image_id = yield from bot._client.upload_image(image_data, filename=filename)
         yield from bot.coro_send_message(event.conv.id_, None, image_id=image_id)
         return True
