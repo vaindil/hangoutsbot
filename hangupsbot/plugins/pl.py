@@ -73,16 +73,18 @@ def pl(bot, event, *args):
             else:
                 inp += ' ' + result
 
-    fall = re.findall('(?:http(?:s):\/\/)?(?:www\.|editor-beta\.)?waze\.com\/editor\S+', inp)
+    fall = re.findall('(?:http(?:s):\/\/)?(?:www\.|editor-beta\.)?waze\.com\/(?:.*?\/)?editor\S+', inp)
     if fall:
         for url in fall:
+            if re.search('\/user\/', url):
+                continue
             if htc.match(url) is None:
                 if not url.startswith('www.'):
                     url = 'www.' + url
                 url = 'https://' + url
             inter.append(url)
 
-    if (inter is None or not inter) and not msgprinted:
+    if  (inter is None or not inter) and not msgprinted:
         yield from bot.coro_send_message(event.conv_id, '<b>Permalink:</b> no PL found')
         return
 
