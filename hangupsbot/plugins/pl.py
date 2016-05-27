@@ -1,6 +1,7 @@
 import logging
 import re
 import requests
+import urllib.parse
 
 import hangups
 import plugins
@@ -17,6 +18,7 @@ def pl(bot, event, *args):
     inter = []
     htc = re.compile('http(?:s)?:\/\/')
     msgprinted = False
+    validparams = ['env', 'lat', 'lon', 'segments', 'nodes', 'venues', 'mapUpdateRequest']
     if not inp:
         yield from bot.coro_send_message(event.conv_id, '<b>Permalink:</b> no message was provided')
         return
@@ -75,7 +77,7 @@ def pl(bot, event, *args):
     if fall:
         for url in fall:
             if htc.match(url) is None:
-                if not url.startswith('www.') and not url.startswith('editor-beta.'):
+                if not url.startswith('www.'):
                     url = 'www.' + url
                 url = 'https://' + url
             inter.append(url)
@@ -84,22 +86,17 @@ def pl(bot, event, *args):
         yield from bot.coro_send_message(event.conv_id, '<b>Permalink:</b> no PL found')
         return
 
-    for f in inter:
-        f = re.sub('(&|&amp;)mapProblemFilter=(0|1|true|false)', '', f)
-        f = re.sub('(&|&amp;)mapUpdateRequestFilter=(0|1|true|false)', '', f)
-        f = re.sub('(&|&amp;)venueFilter=(0|1|true|false)', '', f)
-        f = re.sub('(&|&amp;)problemsFilter=(0|1|true|false)', '', f)
-        f = re.sub('(&|&amp;)update_requestsFilter=(0|1|true|false)', '', f)
-        f = re.sub('&amp;&amp;', '&amp;', f)
-        f = re.sub('layers=[0-9]+', '', f)
-        f = re.sub('%\S*', '', f)
-        f = re.sub('\[\S*', '', f)
-        f = re.sub('\]\S*', '', f)
-        f = re.sub('b=[01]+', '', f)
-        f = re.sub('&&', '&', f)
-        f = re.sub('&$', '', f)
+    url = urllib.parse.unquote(url)
+    url = url.replace('editor-beta', 'www', 1)
+    fall = re.findall('(?!(?:\?|&))(?:env|lon|lat|zoom|mapUpdateRequest|segments|nodes|venues)=.+?(?=(?:&|$))', url)
+    if fall:
+        url = re.sub('\?.*', '', url, flags=re.DOTALL)
+        url += '?'
+        for p in fall:
+            url += p + '&'
+        url = url[:-1]
 
-        yield from bot.coro_send_message(event.conv, f.strip())
+    yield from bot.coro_send_message(event.conv, url.strip())
 
 def checkurl(url, regex):
     if regex.match(url) is None:
