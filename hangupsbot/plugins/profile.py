@@ -27,10 +27,14 @@ def profile(bot, event, *args):
         yield from bot.coro_send_message(event.conv, '<b>profile:</b> username cannot contain a space')
         return
 
+    editorurl = 'https://www.waze.com/user/editor/' + un
     segments = [hangups.ChatMessageSegment('Links for ' + un + ': ', is_bold=True),
                 hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK),
-                hangups.ChatMessageSegment('Editor profile', link_target='https://www.waze.com/user/editor/' + un),
+                hangups.ChatMessageSegment('Editor profile', is_bold=True),
+                hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK),
+                hangups.ChatMessageSegment(editorurl, link_target=editorurl),
                 hangups.ChatMessageSegment(' (may not exist)', is_italic=True),
+                hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK),
                 hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK)]
 
     forumurl = 'https://www.waze.com/forum/memberlist.php?mode=viewprofile&un=' + un
@@ -40,13 +44,15 @@ def profile(bot, event, *args):
         r = 999
 
     if r == 200:
-
-        segments.append(hangups.ChatMessageSegment('Forum profile', link_target=forumurl))
+        segments.append(hangups.ChatMessageSegment('Forum profile', is_bold=True))
+        segments.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
+        segments.append(hangups.ChatMessageSegment(forumurl, link_target=forumurl))
     elif r == 404:
         segments.append(hangups.ChatMessageSegment('(no forum profile)', is_italic=True))
     elif r == 999:
         segments.append(hangups.ChatMessageSegment('(error checking forum profile)', is_italic=True))
 
+    segments.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
     segments.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
 
     wikiurl = 'https://wiki.waze.com/wiki/User:' + un
@@ -56,12 +62,14 @@ def profile(bot, event, *args):
         r = 999
 
     if r == 200:
-        segments.append(hangups.ChatMessageSegment('Wiki profile', link_target=wikiurl))
+        segments.append(hangups.ChatMessageSegment('Wiki profile', is_bold=True))
+        segments.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
+        segments.append(hangups.ChatMessageSegment(wikiurl, link_target=wikiurl))
     elif r == 404:
         segments.append(hangups.ChatMessageSegment('(no wiki profile)', is_italic=True))
     elif r == 999:
         segments.append(hangups.ChatMessageSegment('(error checking wiki profile)', is_italic=True))
 
-    yield from bot.coro_send_message(event.conv, segments, context={'parser': True})
+    yield from bot.coro_send_message(event.conv, segments)
 
     # yield from bot.coro_send_message(event.conv, rstr)
