@@ -207,11 +207,11 @@ def mention(bot, event, *args):
 
         if (username_lower == "all" or
 
-                username_lower in u.full_name.replace(" ", "").lower() or
-                    username_upper in _normalised_full_name_upper.replace(" ", "") or
+                u.full_name.replace(" ", "").lower().startswith(username_lower) or
+                    _normalised_full_name_upper.replace(" ", "").startswith(username_upper) or
 
-                username_lower in u.full_name.replace(" ", "_").lower() or
-                    username_upper in _normalised_full_name_upper.replace(" ", "_") or
+                u.full_name.replace(" ", "_").lower().startswith(username_lower) or
+                    _normalised_full_name_upper.replace(" ", "_").startswith(username_upper) or
 
                 username_lower == nickname_lower or
                 username in u.full_name.split(" ")):
