@@ -21,8 +21,6 @@ def _initialise():
 
 def _handle_keyword(bot, event, command):
     """handle keyword"""
-    if event.user.is_self:
-        return
 
     _populate_keywords(bot, event)
 
@@ -41,12 +39,7 @@ def _handle_keyword(bot, event, command):
         try:
             if _internal.keywords[user.id_.chat_id] and not user.id_.chat_id in event.user.id_.chat_id:
                 for phrase in _internal.keywords[user.id_.chat_id]:
-<<<<<<< HEAD
                     if _words_in_text(phrase, event.text):
-=======
-                    regexphrase = "(^|\s)" + phrase + "(\s|$)"
-                    if re.search(regexphrase, event.text, re.IGNORECASE):
->>>>>>> ed2a641f238ae9acc9c43931fa27a1f8495f0e26
                         yield from _send_notification(bot, event, phrase, user)
         except KeyError:
             # User probably hasn't subscribed to anything

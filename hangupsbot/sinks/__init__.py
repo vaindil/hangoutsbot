@@ -42,8 +42,12 @@ def start(bot):
                     logger.error("config.jsonrpc[{}].module must be a valid package name".format(itemNo))
                     continue
 
-                certfile = sinkConfig.get("certfile")
-                if certfile and not os.path.isfile(certfile):
+                certfile = sinkConfig["certfile"]
+                if not certfile:
+                    logger.error("config.jsonrpc[{}].certfile must be configured".format(itemNo))
+                    continue
+
+                if not os.path.isfile(certfile):
                     logger.error("config.jsonrpc[{}].certfile not available at {}".format(itemNo, certfile))
                     continue
 
@@ -104,11 +108,10 @@ def start_listening(bot=None, loop=None, name="", port=8000, certfile=None, webh
     try:
         httpd = HTTPServer((name, port), webhookReceiver)
 
-        if certfile:
-            httpd.socket = ssl.wrap_socket(
-                httpd.socket,
-                certfile=certfile,
-                server_side=True)
+        httpd.socket = ssl.wrap_socket(
+          httpd.socket,
+          certfile=certfile,
+          server_side=True)
 
         sa = httpd.socket.getsockname()
 
@@ -147,11 +150,8 @@ def aiohttp_start(bot, name, port, certfile, RequestHandlerClass, group, callbac
     handler = app.make_handler()
     RequestHandler.addroutes(app.router)
 
-    if certfile:
-        sslcontext = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
-        sslcontext.load_cert_chain(certfile)
-    else:
-        sslcontext = None
+    sslcontext = ssl.SSLContext(ssl.PROTOCOL_SSLv23)
+    sslcontext.load_cert_chain(certfile)
 
     loop = asyncio.get_event_loop()
     server = loop.create_server(handler, name, port, ssl=sslcontext)

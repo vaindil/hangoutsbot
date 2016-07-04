@@ -7,10 +7,10 @@ logger = logging.getLogger(__name__)
 def _initialise(bot):
     plugins.register_user_command(["catfact"])
 
-def catfact(bot, event, number=1):
+def catfact(bot, event, *args):
     try:
-        r = requests.get("http://catfacts-api.appspot.com/api/facts?number={}".format(number))
-        html_text = '<br>'.join(r.json()['facts'])
+        r = requests.get("http://catfacts-api.appspot.com/api/facts?number=1")
+        html_text = r.json()['facts'][0]
     except:
         html_text = "Unable to get catfacts right now"
         logger.exception(html_text)

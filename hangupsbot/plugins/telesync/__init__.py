@@ -78,15 +78,15 @@ class TelegramBot(telepot.async.Bot):
 
     @staticmethod
     def on_user_join(bot, chat_id, msg):
-        print("New User: {name}".format(name=msg['left_chat_member']['first_name']))
+        print("New User: {name}".format(name=msg['left_chat_participant']['first_name']))
 
     @staticmethod
     def on_user_leave(bot, chat_id, msg):
-        print("{name} Left the gorup".format(name=msg['left_chat_member']['first_name']))
+        print("{name} Left the gorup".format(name=msg['left_chat_participant']['first_name']))
 
     @staticmethod
     def on_location_share(bot, chat_id, msg):
-        print("{name} shared a location".format(name=msg['left_chat_member']['first_name']))
+        print("{name} shared a location".format(name=msg['left_chat_participant']['first_name']))
 
     def set_on_message_callback(self, func):
         self.onMessageCallback = func
@@ -111,8 +111,8 @@ class TelegramBot(telepot.async.Bot):
     def handle(self, msg):
         flavor = telepot.flavor(msg)
 
-        if flavor == "chat":  # chat message
-            content_type, chat_type, chat_id = telepot.glance(msg)
+        if flavor == "normal":  # normal message
+            content_type, chat_type, chat_id = telepot.glance2(msg)
             if content_type == 'text':
                 if TelegramBot.is_command(msg):  # bot command
                     cmd, params = TelegramBot.parse_command(msg['text'])
@@ -129,21 +129,21 @@ class TelegramBot(telepot.async.Bot):
             elif content_type == 'location':
                 yield from self.onLocationShareCallback(self, chat_id, msg)
 
-            elif content_type == 'new_chat_member':
+            elif content_type == 'new_chat_participant':
                 yield from self.onUserJoinCallback(self, chat_id, msg)
 
-            elif content_type == 'left_chat_member':
+            elif content_type == 'left_chat_participant':
                 yield from self.onUserLeaveCallback(self, chat_id, msg)
 
             elif content_type == 'photo':
                 yield from self.onPhotoCallback(self, chat_id, msg)
 
         elif flavor == "inline_query":  # inline query e.g. "@gif cute panda"
-            query_id, from_id, query_string = telepot.glance(msg, flavor=flavor)
+            query_id, from_id, query_string = telepot.glance2(msg, flavor=flavor)
             print("inline_query")
 
         elif flavor == "chosen_inline_result":
-            result_id, from_id, query_string = telepot.glance(msg, flavor=flavor)
+            result_id, from_id, query_string = telepot.glance2(msg, flavor=flavor)
             print("chosen_inline_result")
 
         else:
@@ -204,8 +204,7 @@ def tg_util_sync_get_user_name(msg, chat_action='from'):
     url = tg_util_create_telegram_me_link(username)
     return msg[chat_action]['first_name'] if username == "" else "<a href='{url}' >{uname}</a>".format(url=url,
                                                                                                        uname=
-                                                                                                       msg[
-                                                                                                           chat_action][
+                                                                                                       msg[chat_action][
                                                                                                            'first_name'])
 
 
@@ -240,16 +239,15 @@ def tg_on_photo(tg_bot, tg_chat_id, msg):
         # TODO: find a better way to handling file paths
         photo_path = 'hangupsbot/plugins/telesync/telesync_photos/' + photo_id + ".jpg"
 
-        text = "Uploading photo from <b>{uname}</b> in <b>{gname}</b>...".format(
-            uname=tg_util_sync_get_user_name(msg),
-            gname=tg_util_get_group_name(msg))
+        text = "Uploading photo from <b>{uname}</b> in <b>{gname}</b>...".format(uname=tg_util_sync_get_user_name(msg),
+                                                                                 gname=tg_util_get_group_name(msg))
         yield from tg_bot.ho_bot.coro_send_message(ho_conv_id, text)
 
         file_dir = os.path.dirname(photo_path)
         if not os.path.exists(file_dir):
             os.makedirs(file_dir)
 
-        yield from tg_bot.download_file(photo_id, photo_path)
+        yield from tg_bot.downloadFile(photo_id, photo_path)
 
         logger.info("[TELESYNC] Uploading photo...")
         with open(photo_path, "rb") as photo_file:
@@ -269,7 +267,7 @@ def tg_on_user_join(tg_bot, tg_chat_id, msg):
     tg2ho_dict = tg_bot.ho_bot.memory.get_by_path(['telesync'])['tg2ho']
     if str(tg_chat_id) in tg2ho_dict:
         text = "<b>{uname}</b> joined <b>{gname}</b>".format(
-            uname=tg_util_sync_get_user_name(msg, chat_action='new_chat_member'),
+            uname=tg_util_sync_get_user_name(msg, chat_action='new_chat_participant'),
             gname=tg_util_get_group_name(msg))
 
         ho_conv_id = tg2ho_dict[str(tg_chat_id)]
@@ -285,7 +283,7 @@ def tg_on_user_leave(tg_bot, tg_chat_id, msg):
     tg2ho_dict = tg_bot.ho_bot.memory.get_by_path(['telesync'])['tg2ho']
     if str(tg_chat_id) in tg2ho_dict:
         text = "<b>{uname}</b> left <b>{gname}</b>".format(
-            uname=tg_util_sync_get_user_name(msg, chat_action='left_chat_member'),
+            uname=tg_util_sync_get_user_name(msg, chat_action='left_chat_participant'),
             gname=tg_util_get_group_name(msg))
 
         ho_conv_id = tg2ho_dict[str(tg_chat_id)]
@@ -353,8 +351,7 @@ def tg_command_set_sync_ho(bot, chat_id, args):  # /setsyncho <hangout conv_id>
     ho2tg_dict = memory['ho2tg']
 
     if str(chat_id) in tg2ho_dict:
-        yield from bot.sendMessage(chat_id,
-                                   "Sync target '{ho_conv_id}' already set".format(ho_conv_id=str(params[0])))
+        yield from bot.sendMessage(chat_id, "Sync target '{ho_conv_id}' already set".format(ho_conv_id=str(params[0])))
 
     else:
         tg2ho_dict[str(chat_id)] = str(params[0])
@@ -501,7 +498,7 @@ def _initialise(bot):
         tg_bot.add_command("/tldr", tg_command_tldr)
 
         loop = asyncio.get_event_loop()
-        loop.create_task(tg_bot.message_loop())
+        loop.create_task(tg_bot.messageLoop())
 
 
 @command.register(admin=True)
@@ -587,11 +584,10 @@ def _on_hangouts_message(bot, event, command=""):
 
     if event.conv_id in ho2tg_dict:
         user_gplus = 'https://plus.google.com/u/0/{uid}/about'.format(uid=event.user_id.chat_id)
-        text = '<a href="{user_gplus}">{uname}</a> <b>({gname})</b>: {text}'.format(uname=event.user.full_name,
-                                                                                    user_gplus=user_gplus,
-                                                                                    gname=event.conv.name,
-                                                                                    text=sync_text)
-        yield from tg_bot.sendMessage(ho2tg_dict[event.conv_id], text, parse_mode='html',
+        text = "[{uname}]({user_gplus}) *({gname})*: {text}".format(uname=event.user.full_name,
+                                                                    user_gplus=user_gplus,
+                                                                    gname=event.conv.name, text=sync_text)
+        yield from tg_bot.sendMessage(ho2tg_dict[event.conv_id], text, parse_mode='Markdown',
                                       disable_web_page_preview=True)
         if has_photo:
             photo_name = photo_url.rpartition('/')[-1]
@@ -620,10 +616,9 @@ def _on_hangouts_message(bot, event, command=""):
 
 
 def create_membership_change_message(user_name, user_gplus, group_name, membership_event="left"):
-    text = '<a href="{user_gplus}">{uname}</a> {membership_event} <b>({gname})</b>'.format(uname=user_name,
-                                                                                           user_gplus=user_gplus,
-                                                                                           gname=group_name,
-                                                                                           membership_event=membership_event)
+    text = "[{uname}]({user_gplus}) {membership_event} *({gname})*".format(uname=user_name, user_gplus=user_gplus,
+                                                                           gname=group_name,
+                                                                           membership_event=membership_event)
     return text
 
 
@@ -642,5 +637,5 @@ def _on_membership_change(bot, event, command=""):
     ho2tg_dict = bot.memory.get_by_path(['telesync'])['ho2tg']
 
     if event.conv_id in ho2tg_dict:
-        yield from tg_bot.sendMessage(ho2tg_dict[event.conv_id], text, parse_mode='html',
+        yield from tg_bot.sendMessage(ho2tg_dict[event.conv_id], text, parse_mode='Markdown',
                                       disable_web_page_preview=True)
