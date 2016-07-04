@@ -44,7 +44,7 @@ def addplugin(bot, event, plugin, *args):
                 bot.config.save()
                 yield from bot.coro_send_message(event.conv_id, "Plugin <i>{}</i> added".format(plugin))
             else:
-                yield from bot.coro_send_message(event.conv_id, "Error: Do <b>/bot config set plugins []</b> first")
+                yield from bot.coro_send_message(event.conv_id, "Error: Do <b>!wb config set plugins []</b> first")
         else:
             yield from bot.coro_send_message(event.conv_id, "Not a valid plugin name")
     else:

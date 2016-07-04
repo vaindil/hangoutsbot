@@ -76,7 +76,7 @@ def prepare(bot, event, *args):
     draw_lists[global_draw_name] = {"box": [], "users": {}}
 
     """special types
-        /bot prepare [thing] COMPASS - 4 cardinal + 4 ordinal
+        !wb prepare [thing] COMPASS - 4 cardinal + 4 ordinal
 
         XXX: add more useful shortcuts here!
     """

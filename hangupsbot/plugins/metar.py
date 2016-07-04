@@ -1,7 +1,7 @@
 """
 Looks up the most recent METAR/TAF weather report for the supplied ICAO airport code.
-        <b>/bot metar <ICAO airport code></b>
-        <b>/bot taf <ICAO airport code></b>
+        <b>!wb metar <ICAO airport code></b>
+        <b>!wb taf <ICAO airport code></b>
 
 ICAO Airport Codes: https://en.wikipedia.org/wiki/International_Civil_Aviation_Organization_airport_code
 METAR source: http://aviationweather.gov

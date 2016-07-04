@@ -71,5 +71,5 @@ def _one2one_required(bot, target_conversation):
     myself = bot.user_self()
     yield from bot.coro_send_message(target_conversation,
         (_('<i>User must say "hi" to me first via a 1-on-1 hangout with <b>{}</b>.') +
-         _('Then let me know by sending <b>/bot verifyme</b> in this chat.</i>')).format(
+         _('Then let me know by sending <b>!wb verifyme</b> in this chat.</i>')).format(
             myself["email"]))

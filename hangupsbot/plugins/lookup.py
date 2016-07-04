@@ -77,7 +77,7 @@ def lookup(bot, event, *args):
     if counter > counter_max:
         htmlmessage += _('<br />{0} rows found. Only returning first {1}.').format(counter, counter_max)
         if counter_max == 5:
-            htmlmessage += _('<br />Hint: Use <b>/bot lookup <{0} {1}</b> to view {0} rows').format(counter_max*2, keyword)
+            htmlmessage += _('<br />Hint: Use <b>!wb lookup <{0} {1}</b> to view {0} rows').format(counter_max*2, keyword)
 
     if counter == 0:
         htmlmessage += _('No match found')

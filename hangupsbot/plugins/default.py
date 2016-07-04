@@ -57,7 +57,7 @@ def broadcast(bot, event, *args):
         if subcmd == "info":
             """display broadcast data such as message and target rooms"""
 
-            conv_info = [ "<b><pre>{}</pre></b> ... <pre>{}</pre>".format(bot.conversations.get_name(convid), convid) 
+            conv_info = [ "<b><pre>{}</pre></b> ... <pre>{}</pre>".format(bot.conversations.get_name(convid), convid)
                           for convid in _internal["broadcast"]["conversations"] ]
 
             if not _internal["broadcast"]["message"]:
@@ -135,10 +135,10 @@ def broadcast(bot, event, *args):
             yield from bot.coro_send_message(event.conv, _("broadcast: message sent to {} chats".format(len(_internal["broadcast"]["conversations"]))))
 
         else:
-            yield from bot.coro_send_message(event.conv, _("broadcast: /bot broadcast [info|message|add|remove|NOW] ..."))
+            yield from bot.coro_send_message(event.conv, _("broadcast: !wb broadcast [info|message|add|remove|NOW] ..."))
 
     else:
-        yield from bot.coro_send_message(event.conv, _("broadcast: /bot broadcast [info|message|add|remove|NOW]"))
+        yield from bot.coro_send_message(event.conv, _("broadcast: !wb broadcast [info|message|add|remove|NOW]"))
 
 
 def users(bot, event, *args):

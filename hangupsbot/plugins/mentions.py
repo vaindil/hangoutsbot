@@ -287,7 +287,7 @@ def mention(bot, event, *args):
                         text_html += ' (' + bot.memory.get_by_path(['user_data', u.id_.chat_id, "nickname"]) + ')'
                     text_html += '<br />'
 
-                text_html += "<br /><em>To toggle this message on/off, use <b>/bot bemorespecific</b></em>"
+                text_html += "<br /><em>To toggle this message on/off, use <b>!wb bemorespecific</b></em>"
 
                 yield from bot.coro_send_message(conv_1on1_initiator, text_html)
 

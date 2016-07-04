@@ -120,9 +120,9 @@ def spotify(bot, event, *args):
                 event.conv_id, "spotify_enabled", enabled)
         elif not enabled:
             result = _(("<em>Spotify is <b>off</b>. To turn it on, "
-                        "use <b>/bot spotify on</b></em>"))
+                        "use <b>!wb spotify on</b></em>"))
         elif command == "help" and len(args) == 1:
-            result = _("<em>Did you mean <b>/bot help spotify</b>?</em>")
+            result = _("<em>Did you mean <b>!wb help spotify</b>?</em>")
         elif command == "playlist" and len(args) == 1:
             playlist = chat_playlist(bot, event)
             result = _("<em>Spotify playlist: {}</em>".format(playlist.url))
