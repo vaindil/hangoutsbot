@@ -73,7 +73,7 @@ def pl(bot, event, *args):
             else:
                 inp += ' ' + result
 
-    fall = re.findall('(?:http(?:s):\/\/)?(?:www\.|editor-beta\.)?waze\.com\/(?:.*?\/)?editor\S+', inp)
+    fall = re.findall('(?:http(?:s):\/\/)?(?:www\.|beta\.)?waze\.com\/(?:.*?\/)?editor\S+', inp)
     if fall:
         for url in fall:
             if re.search('\/user\/', url):
