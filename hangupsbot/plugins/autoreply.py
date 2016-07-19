@@ -121,27 +121,29 @@ def send_reply(bot, event, message):
             values["guest"] = guest # add the guest as extra info
             envelopes.append((target_conv, message.format(**values)))
 
-    # check with if, not elif, to allow one_to_one images
-    # message is changed above, so this works in all cases
-    if message.startswith("BOTIMAGE:"):
-        message = message[message.index(":")+1:].strip()
-        filename = os.path.basename(message)
-        if message.startswith('http'):
-            r = yield from aiohttp.request('get', message)
-            raw = yield from r.read()
-            image_data = io.BytesIO(raw)
-        elif base_image_path:
-            with open(base_image_path + filename, 'rb') as f:
-                image_data = io.BytesIO(f.read())
-
-        image_id = yield from bot._client.upload_image(image_data, filename=filename)
-        yield from bot.coro_send_message(event.conv.id_, None, image_id=image_id)
-        return True
-
     else:
         envelopes.append((event.conv, message.format(**values)))
 
+    # check with if, not elif, to allow one_to_one images
+    # message is changed above, so this works in all cases
+
+
     for send in envelopes:
+        if message.startswith("BOTIMAGE:"):
+            message = message[message.index(":")+1:].strip()
+            filename = os.path.basename(message)
+            if message.startswith("http"):
+                r = yield from aiohttp.request("get", message)
+                raw = yield from r.read()
+                image_data = io.BytesIO(raw)
+            elif base_image_path:
+                with open(base_image_path + filename, "rb") as f:
+                    image_data = io.BytesIO(f.read())
+
+            image_id = yield from bot._client.upload_image(image_data, filename=filename)
+            yield from bot.coro_send_message(send[0], None, image_id=image_id)
+            continue
+
         yield from bot.coro_send_message(*send)
 
     return True
