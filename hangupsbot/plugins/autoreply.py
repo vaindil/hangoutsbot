@@ -121,7 +121,9 @@ def send_reply(bot, event, message):
             values["guest"] = guest # add the guest as extra info
             envelopes.append((target_conv, message.format(**values)))
 
-    elif message.startswith("BOTIMAGE:"):
+    # check with if, not elif, to allow one_to_one images
+    # message is changed above, so this works in all cases
+    if message.startswith("BOTIMAGE:"):
         message = message[message.index(":")+1:].strip()
         filename = os.path.basename(message)
         if message.startswith('http'):
