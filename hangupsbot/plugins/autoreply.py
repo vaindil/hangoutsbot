@@ -39,15 +39,43 @@ def _handle_autoreply(bot, event, command):
     else:
         raise RuntimeError("unhandled event type")
 
-    autoreplies_list = bot.get_config_suboption(event.conv_id, 'autoreplies')
-    global_list = bot.get_config_suboption('GLOBAL', 'autoreplies')
+    conv_tags = []
+    tagged_list = []
 
-    if not autoreplies_list and global_list:
-        autoreplies_list = global_list
+    if event.conv_id in bot.tags.indices["conv-tags"]:
+        conv_tags = bot.tags.indices["conv-tags"][event.conv_id]
+        for conv_tag in conv_tags:
+            tlist = bot.get_config_suboption("TAG:" + conv_tag, "autoreplies")
+            if tlist:
+                tagged_list.extend(tlist)
+
+    autoreplies_list = bot.get_config_suboption(event.conv_id, "autoreplies")
+    global_list = bot.get_config_suboption("GLOBAL", "autoreplies")
 
     r = False
     if autoreplies_list:
         for kwds, sentences in autoreplies_list:
+
+            if isinstance(sentences, list):
+                message = random.choice(sentences)
+            else:
+                message = sentences
+
+            if isinstance(kwds, list):
+                for kw in kwds:
+                    if _words_in_text(kw, event.text) or kw == "*":
+                        # logger.info("matched chat: {}".format(kw))
+                        yield from send_reply(bot, event, message)
+                        r = True
+                        break
+
+            elif event_type == kwds:
+                # logger.info("matched event: {}".format(kwds))
+                yield from send_reply(bot, event, message)
+                r = True
+
+    if not r and tagged_list:
+        for kwds, sentences in tagged_list:
 
             if isinstance(sentences, list):
                 message = random.choice(sentences)
