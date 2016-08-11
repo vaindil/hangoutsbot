@@ -9,10 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 def glossary(bot, event, *args):
-    spjoin = " ".join(args)
+    spjoin = ' '.join(args)
     matches = {}
-    url = "https://wiki.waze.com/wiki/Glossary"
-    if spjoin == "":
+    url = 'https://wazeopedia.waze.com/wiki/USA/Glossary'
+    if spjoin == '':
         yield from bot.coro_send_message(event.conv, '<b>glossary</b> - look up a word or phrase in the wiki glossary at ' + url)
         return
     r = requests.get(url).text
@@ -32,13 +32,13 @@ def glossary(bot, event, *args):
             matches[round(tmp2 * 100)] = [tmpb, '<b>' + tmpb + '</b>']
 
     if len(matches) == 0:
-        yield from bot.coro_send_message(event.conv, "No match found for term: <b>" + spjoin + '</b>. The glossary page'
+        yield from bot.coro_send_message(event.conv, 'No match found for term: <b>' + spjoin + '</b>. The glossary page'
                                                                                                ' is at ' + url)
         return
 
     if 100 in matches:
         yield from bot.coro_send_message(event.conv,
-                                         '<b>' + matches[100][1] + "</b>: " + url + "#" + matches[100][0].replace(' ',
+                                         '<b>' + matches[100][1] + '</b>: ' + url + '#' + matches[100][0].replace(' ',
                                                                                                                   '_'))
         return
 
@@ -57,4 +57,4 @@ def glossary(bot, event, *args):
 
 
 def _initialise(bot):
-    plugins.register_user_command(["glossary"])
+    plugins.register_user_command(['glossary'])
