@@ -51,7 +51,7 @@ def _migrate_syncroom_v1(bot):
             _config2 = list(_newdict.values())
             bot.config.set_by_path(["sync_rooms"], _config2) # write new config
             bot.config.save()
-            logger.info("_migrate_syncroom_v1(): config-v2 = {}".format(_config2))
+            # logger.info("_migrate_syncroom_v1(): config-v2 = {}".format(_config2))
 
 
 def _handle_syncrooms_broadcast(bot, broadcast_list, context):
@@ -65,7 +65,7 @@ def _handle_syncrooms_broadcast(bot, broadcast_list, context):
         return
 
     if context and "explicit_relay" in context:
-        logger.debug("handler disabled by context")
+        # logger.debug("handler disabled by context")
         return
 
     origin_conversation_id = broadcast_list[0][0]
@@ -79,10 +79,11 @@ def _handle_syncrooms_broadcast(bot, broadcast_list, context):
                     if origin_conversation_id != other_room_id:
                         broadcast_list.append((other_room_id, response))
 
-                logger.debug("broadcasting to {} room(s)".format(len(broadcast_list)))
+                # logger.debug("broadcasting to {} room(s)".format(len(broadcast_list)))
 
-            else:
-                logger.debug("not a sync room".format(origin_conversation_id))
+            # else:
+
+                # logger.debug("not a sync room".format(origin_conversation_id))
 
 
 @asyncio.coroutine
@@ -233,7 +234,7 @@ def _handle_syncrooms_membership_change(bot, event, command):
     if event.conv_event.type_ == hangups.MembershipChangeType.JOIN:
         # JOIN a specific room
 
-        logger.info("{} user(s) added to {}".format(len(event_users), event.conv_id))
+        # logger.info("{} user(s) added to {}".format(len(event_users), event.conv_id))
 
         if syncroom_name:
             yield from bot.coro_send_message(event.conv, '<i>{} has added {} to {}</i>'.format(
@@ -243,7 +244,7 @@ def _handle_syncrooms_membership_change(bot, event, command):
     else:
         # LEAVE a specific room
 
-        logger.info("{} user(s) left {}".format(len(event_users), event.conv_id))
+        # logger.info("{} user(s) left {}".format(len(event_users), event.conv_id))
 
         if syncroom_name:
             yield from bot.coro_send_message(event.conv, '<i>{} has left {}</i>'.format(
