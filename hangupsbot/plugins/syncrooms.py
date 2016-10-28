@@ -138,8 +138,11 @@ def _handle_incoming_message(bot, event, command):
                 # Now check if there is a nickname set
 
                 try:
+                    msgnickname = bot.get_memory_suboption(event.user_id.chat_id, 'nickname')
+                    if not msgnickname:
+                        raise TypeError
                     fullname = '{0} ({1})'.format(event.user.full_name.split(' ', 1)[0]
-                        , bot.get_memory_suboption(event.user_id.chat_id, 'nickname'))
+                        , msgnickname)
                 except TypeError:
                     fullname = event.user.full_name
             elif sameroom and sameuser and not timeout:
