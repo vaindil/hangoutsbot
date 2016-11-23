@@ -18,7 +18,6 @@ def pl(bot, event, *args):
     inter = []
     htc = re.compile('http(?:s)?:\/\/')
     msgprinted = False
-    validparams = ['env', 'lat', 'lon', 'segments', 'nodes', 'venues', 'mapUpdateRequest']
     if not inp:
         yield from bot.coro_send_message(event.conv_id, '<b>Permalink:</b> no message was provided')
         return
@@ -90,7 +89,7 @@ def pl(bot, event, *args):
 
     url = urllib.parse.unquote(url)
     url = url.replace('beta', 'www', 1)
-    fall = re.findall('(?!(?:\?|&))(?:env|lon|lat|zoom|mapUpdateRequest|segments|nodes|venues|cameras)=.+?(?=(?:&|$))', url)
+    fall = re.findall('(?!(?:\?|&))(?:env|lon|lat|zoom|mapUpdateRequest|segments|nodes|venues|cameras|mapComments)=.+?(?=(?:&|$))', url)
     if fall:
         url = re.sub('\?.*', '', url, flags=re.DOTALL)
         url += '?'
