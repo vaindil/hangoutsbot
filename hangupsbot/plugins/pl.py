@@ -89,7 +89,7 @@ def pl(bot, event, *args):
 
     url = urllib.parse.unquote(url)
     url = url.replace('beta', 'www', 1)
-    fall = re.findall('(?!(?:\?|&))(?:env|lon|lat|zoom|mapUpdateRequest|segments|nodes|venues|cameras|mapComments)=.+?(?=(?:&|$))', url)
+    fall = re.findall('(?!(?:\?|&))(?:env|lon|lat|zoom|mapUpdateRequest|segments|nodes|venues|cameras|bigJunctions|mapComments)=[a-zA-Z0-9.\-,_\.]+', url)
     if fall:
         url = re.sub('\?.*', '', url, flags=re.DOTALL)
         url += '?'
