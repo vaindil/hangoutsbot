@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import plugins
 
 logger = logging.getLogger(__name__)
-def prettydate(diff):
+def prettydate(diff, d):
     s = diff.seconds
     if diff.days > 7 or diff.days < 0:
         return d.strftime('%d %b %y')
@@ -77,7 +77,8 @@ def _watch_twitter_link(bot, event, command):
     text = re.sub(r'(\W)@(\w{1,15})(\W)', r'\1<a href="https://twitter.com/\2">@\2</a>\3' ,tweet['text'])
     text = re.sub(r'(\W)#(\w{1,15})(\W)', r'\1<a href="https://twitter.com/hashtag/\2">#\2</a>\3', text)
     time = tweet['created_at']
-    timeago = prettydate(datetime.datetime.now(tz=datetime.timezone.utc) - datetime.datetime.strptime(time, '%a %b %d %H:%M:%S %z %Y'))
+    time_datetime = datetime.datetime.strptime(time, '%a %b %d %H:%M:%S %z %Y')
+    timeago = prettydate(datetime.datetime.now(tz=datetime.timezone.utc) - time_datetime, time_datetime)
     logger.info(timeago)
     username = tweet['user']['name']
     twhandle = tweet['user']['screen_name']
