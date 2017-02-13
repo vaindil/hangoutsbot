@@ -242,7 +242,7 @@ def _handle_syncrooms_membership_change(bot, event, command):
             yield from bot.coro_send_message(event.conv, '<i>{} has added {} to {}</i>'.format(
                 event.user.full_name,
                 names,
-                syncroom_name))
+                'this conversation'))
     else:
         # LEAVE a specific room
 
@@ -251,7 +251,7 @@ def _handle_syncrooms_membership_change(bot, event, command):
         if syncroom_name:
             yield from bot.coro_send_message(event.conv, '<i>{} has left {}</i>'.format(
                 names,
-                syncroom_name))
+                'this conversation'))
 
 
 def syncusers(bot, event, conversation_id=None, *args):
