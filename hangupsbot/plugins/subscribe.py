@@ -39,7 +39,8 @@ def _handle_keyword(bot, event, command):
         try:
             if _internal.keywords[user.id_.chat_id] and not user.id_.chat_id in event.user.id_.chat_id:
                 for phrase in _internal.keywords[user.id_.chat_id]:
-                    if _words_in_text(phrase, event.text):
+                    regexphrase = "(^| )" + phrase + "( |$)"
+                    if re.search(regexphrase, event.text, re.IGNORECASE):
                         yield from _send_notification(bot, event, phrase, user)
         except KeyError:
             # User probably hasn't subscribed to anything
