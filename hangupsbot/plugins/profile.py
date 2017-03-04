@@ -55,7 +55,7 @@ def profile(bot, event, *args):
     segments.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
     segments.append(hangups.ChatMessageSegment('\n', hangups.SegmentType.LINE_BREAK))
 
-    wikiurl = 'https://wiki.waze.com/wiki/User:' + un
+    wikiurl = 'https://wazeopedia.waze.com/wiki/USA/User:' + un
     try:
         r = requests.get(wikiurl, timeout=8).status_code
     except requests.exceptions.Timeout:
