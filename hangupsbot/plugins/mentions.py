@@ -159,6 +159,14 @@ def mention(bot, event, *args):
                 """initiator is not an admin, check whitelist"""
                 logger.debug("@all in {}: user {} ({}) is not admin".format(event.conv.id_, event.user.full_name, event.user.id_.chat_id))
                 all_whitelist = bot.get_config_suboption(event.conv_id, 'mentionallwhitelist')
+
+                if event.conv_id in bot.tags.indices["conv-tags"]:
+                    conv_tags = bot.tags.indices["conv-tags"][event.conv_id]
+                    for conv_tag in conv_tags:
+                        mlist = bot.get_config_suboption("TAG:" + conv_tag, "mentionallwhitelist")
+                        if mlist:
+                            all_whitelist.extend(tlist)
+
                 global_whitelist = bot.get_config_suboption('GLOBAL', 'mentionallwhitelist')
                 if global_whitelist:
                     if all_whitelist:

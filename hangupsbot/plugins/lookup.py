@@ -12,15 +12,30 @@ logger = logging.getLogger(__name__)
 def lookup(bot, event, *args):
     """find keywords in a specified spreadsheet"""
 
-    if not bot.get_config_suboption(event.conv_id, 'spreadsheet_enabled'):
+    spreadsheet_enabled = bot.get_config_suboption(event.conv_id, 'spreadsheet_enabled')
+    spreadsheet_url = bot.get_config_suboption(event.conv_id, 'spreadsheet_url')
+
+    if event.conv_id in bot.tags.indices["conv-tags"]:
+        conv_tags = bot.tags.indices["conv-tags"][event.conv_id]
+        for conv_tag in conv_tags:
+            new_spreadsheet_enabled = bot.get_config_suboption('TAG:' + conv_tag, 'spreadsheet_enabled')
+            new_spreadsheet_url = bot.get_config_suboption('TAG:' + conv_tag, 'spreadsheet_url')
+
+            if (new_spreadsheet_enabled or new_spreadsheet_url) and (spreadsheet_enabled and spreadsheet_url):
+                yield from bot.coro_send_message(event.conv, _("Spreadsheet is configured in multiple places"))
+                return
+
+            spreadsheet_enabled = new_spreadsheet_enabled
+            spreadsheet_url = new_spreadsheet_url
+
+    if not spreadsheet_enabled:
         yield from bot.coro_send_message(event.conv, _("Spreadsheet function disabled"))
         return
 
-    if not bot.get_config_suboption(event.conv_id, 'spreadsheet_url'):
+    if not spreadsheet_url:
         yield from bot.coro_send_message(event.conv, _("Spreadsheet URL not set"))
         return
 
-    spreadsheet_url = bot.get_config_suboption(event.conv_id, 'spreadsheet_url')
     table_class = "waffle" # Name of table class to search. Note that 'waffle' seems to be the default for all spreadsheets
 
     if args[0].startswith('<'):
