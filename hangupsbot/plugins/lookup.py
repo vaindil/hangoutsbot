@@ -21,12 +21,15 @@ def lookup(bot, event, *args):
             new_spreadsheet_enabled = bot.get_config_suboption('TAG:' + conv_tag, 'spreadsheet_enabled')
             new_spreadsheet_url = bot.get_config_suboption('TAG:' + conv_tag, 'spreadsheet_url')
 
-            if (new_spreadsheet_enabled or new_spreadsheet_url) and (spreadsheet_enabled and spreadsheet_url):
+            if new_spreadsheet_url is not None and spreadsheet_url is not None:
                 yield from bot.coro_send_message(event.conv, _("Spreadsheet is configured in multiple places"))
                 return
 
-            spreadsheet_enabled = new_spreadsheet_enabled
-            spreadsheet_url = new_spreadsheet_url
+            if new_spreadsheet_enabled:
+                spreadsheet_enabled = new_spreadsheet_enabled
+
+            if new_spreadsheet_url is not None:
+                spreadsheet_url = new_spreadsheet_url
 
     if not spreadsheet_enabled:
         yield from bot.coro_send_message(event.conv, _("Spreadsheet function disabled"))
