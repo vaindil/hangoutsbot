@@ -47,7 +47,7 @@ def _handle_autoreply(bot, event, command):
         for conv_tag in conv_tags:
             tlist = bot.get_config_suboption("TAG:" + conv_tag, "autoreplies")
             if tlist:
-                tagged_list.append(tlist)
+                tagged_list.extend(tlist)
 
     autoreplies_list = bot.get_config_suboption(event.conv_id, "autoreplies")
     global_list = bot.get_config_suboption("GLOBAL", "autoreplies")
