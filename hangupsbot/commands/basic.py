@@ -1,4 +1,4 @@
-import logging, sys, resource
+import logging, sys, re, resource
 
 import plugins
 
@@ -62,9 +62,25 @@ def help(bot, event, cmd=None, *args):
             yield from command.unknown_command(bot, event)
             return
 
-        help_lines.append("<b>{}</b>: {}".format(command_fn.__name__, command_fn.__doc__))
-        
-    help_lines = [lines.replace('[botalias]', bot._handlers.bot_command[0]) for lines in help_lines]
+        _docstring = command_fn.__doc__.strip()
+
+        """apply limited markdown-like formatting to command help"""
+
+        # simple bullet lists
+        _docstring = re.sub(r'\n +\* +', '\n* ', _docstring)
+
+        # handle generic whitespace
+        # manually parse line-breaks: single break -> space; multiple breaks -> paragraph
+        # XXX: the markdown parser is iffy on line-break processing
+        _docstring = re.sub(r"(?<!\n)\n(?= *[^ \t\n\r\f\v\*])", " ", _docstring) # turn standalone linebreaks into space, preserves multiple linebreaks
+        _docstring = re.sub(r" +", " ", _docstring) # convert multiple consecutive spaces into single space
+        _docstring = re.sub(r" *\n\n+ *(?!\*)", "\n\n", _docstring) # convert consecutive linebreaks into double linebreak (pseudo-paragraph)
+
+        # replace /bot with the first alias in the command handler
+        # XXX: [botalias] is left a replacement token for backward compatibility, please avoid using it
+        _docstring = re.sub("(\/bot|\[botalias\])", bot._handlers.bot_command[0], _docstring)
+
+        help_lines.append("<b>{}</b>: {}".format(command_fn.__name__, _docstring))
 
     yield from bot.coro_send_to_user_and_conversation(
         event.user.id_.chat_id,
@@ -121,6 +137,12 @@ def optout(bot, event, *args):
 def version(bot, event, *args):
     """get the version of the bot"""
     yield from bot.coro_send_message(event.conv, _("Bot Version: <b>{}</b>").format(__version__))
+
+    try:
+        from hangups import __version__ as __hangups_version__
+        yield from bot.coro_send_message(event.conv, _("Hangups Version: <b>{}</b>").format(__hangups_version__))
+    except ImportError:
+        pass
 
 
 @command.register(admin=True)
