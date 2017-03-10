@@ -168,7 +168,7 @@ def mention(bot, event, *args):
                     for conv_tag in conv_tags:
                         mlist = bot.get_config_suboption("TAG:" + conv_tag, "mentionallwhitelist")
                         if mlist:
-                            all_whitelist.extend(tlist)
+                            all_whitelist.extend(mlist)
 
                 global_whitelist = bot.get_config_suboption('GLOBAL', 'mentionallwhitelist')
                 if global_whitelist:
