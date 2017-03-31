@@ -58,10 +58,10 @@ def _user_has_dnd(bot, user_id):
         return initiator_has_dnd
 
 
-def _user_ignoring_all_for_conv(bot, user_id, conv_id):
+def _user_ignoring_all_for_conv(bot, user_id, conv_ids):
     if bot.memory.exists(["user_data", user_id, "ignoring_all"]):
         ignoring = bot.memory.get_by_path(["user_data", user_id, "ignoring_all"])
-        if ignoring and conv_id in ignoring:
+        if [i for i in ignoring if i in conv_ids]:
             return True
     
     return False
@@ -87,6 +87,7 @@ def mention(bot, event, *args):
 
     users_in_chat = event.conv.users
     mention_chat_ids = []
+    all_conv_ids = [ event.conv_id ]
 
     """sync room support"""
     if bot.get_config_option('syncing_enabled'):
@@ -99,6 +100,7 @@ def mention(bot, event, *args):
                     for syncedroom in rooms_group:
                         if event.conv_id is not syncedroom:
                             users_in_chat += bot.get_users_in_conversation(syncedroom)
+                            all_conv_ids.append(syncedroom)
                     users_in_chat = list(set(users_in_chat)) # make unique
                     #logger.debug("@mention in a syncroom: {} user(s) present".format(len(users_in_chat)))
                     break
@@ -264,7 +266,7 @@ def mention(bot, event, *args):
                     user_tracking["ignored"].append(u.full_name)
                     continue
 
-            if username_lower == "all" and _user_ignoring_all_for_conv(bot, u.id_.chat_id, event.conv_id):
+            if username_lower == "all" and _user_ignoring_all_for_conv(bot, u.id_.chat_id, all_conv_ids):
                 user_tracking["ignored"].append(u.full_name)
                 continue
 
