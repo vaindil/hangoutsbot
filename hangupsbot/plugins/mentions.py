@@ -575,7 +575,7 @@ def toggleall(bot, event, *args):
                 _("{}, you were already ignoring all in this conversation.").format(event.user.full_name))
             return
 
-        ignoring.add(event.conv_id)
+        ignoring.append(event.conv_id)
         bot.memory.set_by_path(["user_data", event.user.id_.chat_id, "ignoring_all"], ignoring)
         yield from bot.coro_send_message(
             event.conv,
