@@ -16,7 +16,7 @@ nicks = {}
 def _initialise(bot):
     _migrate_mention_config_to_memory(bot)
     plugins.register_handler(_handle_mention, "message")
-    plugins.register_user_command(["pushbulletapi", "setnickname", "bemorespecific"])
+    plugins.register_user_command(["pushbulletapi", "setnickname", "bemorespecific", "all"])
     plugins.register_admin_command(["mention"])
 
 
@@ -56,6 +56,15 @@ def _user_has_dnd(bot, user_id):
             if user_id in donotdisturb:
                 initiator_has_dnd = True
         return initiator_has_dnd
+
+
+def _user_ignoring_all_for_conv(bot, user_id, conv_id):
+    if bot.memory.exists(["user_data", user_id, "ignoring_all"]):
+        ignoring = bot.memory.get_by_path(["user_data", user_id, "ignoring_all"])
+        if ignoring and conv_id in ignoring:
+            return True
+    
+    return False
 
 
 def mention(bot, event, *args):
@@ -254,6 +263,10 @@ def mention(bot, event, *args):
                     #logger.info("suppressing @mention for {} ({})".format(u.full_name, u.id_.chat_id))
                     user_tracking["ignored"].append(u.full_name)
                     continue
+
+            if _user_ignoring_all_for_conv(bot, u.id_.chat_id, event.conv_id):
+                user_tracking["ignored"].append(u.full_name)
+                continue
 
             if username_lower == nickname_lower:
                 if u not in exact_nickname_matches:
@@ -519,3 +532,50 @@ def setnickname(bot, event, *args):
         yield from bot.coro_send_message(
             event.conv,
             _("Setting nickname to '{}'").format(nickname))
+
+
+def all(bot, event, *args):
+    if len(args) != 1 or (args[0].lower() != 'stop' and args[0].lower() != 'start'):
+        yield from bot.coro_send_message(
+            event.conv,
+            _("Use '!wb mention all stop' to disable all mentions in this Hangout, or '!wb mention all start' to enable them."))
+        return
+
+    ignoring = []
+    if bot.memory.exists(["user_data", event.user.id_.chat_id, "ignoring_all"]):
+        ignoring = bot.memory.get_by_path(["user_data", event.user.id_.chat_id, "ignoring_all"])
+
+    cmd = args[0].lower()
+
+    ignoring_this = False
+    if event.conv_id in ignoring:
+        ignoring_this = True
+
+    if cmd == 'stop':
+        if not ignoring_this:
+            yield from bot.coro_send_message(
+                event.conv,
+                _("{}, you were not ignoring all in this conversation.").format(event.user.full_name))
+            return
+
+        ignoring.remove(event.conv_id)
+        bot.memory.set_by_path(["user_data", event.user.id_.chat_id, "ignoring_all"], ignoring)
+
+        yield from bot.coro_send_message(
+            event.conv,
+            _("{}, you are no longer ignoring all in this conversation.").format(event.user.full_name))
+        return
+
+    elif cmd == 'start':
+        if ignoring_this:
+            yield from bot.coro_send_message(
+                event.conv,
+                _("{}, you were already ignoring all in this conversation.").format(event.user.full_name))
+            return
+
+        ignoring.add(event.conv_id)
+        bot.memory.set_by_path(["user_data", event.user.id_.chat_id, "ignoring_all"], ignoring)
+        yield from bot.coro_send_message(
+            event.conv,
+            _("{}, you are now ignoring all in this conversation.").format(event.user.full_name))
+        return
