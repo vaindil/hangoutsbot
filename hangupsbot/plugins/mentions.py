@@ -16,7 +16,7 @@ nicks = {}
 def _initialise(bot):
     _migrate_mention_config_to_memory(bot)
     plugins.register_handler(_handle_mention, "message")
-    plugins.register_user_command(["pushbulletapi", "setnickname", "bemorespecific", "alltoggle"])
+    plugins.register_user_command(["pushbulletapi", "setnickname", "bemorespecific", "toggleall"])
     plugins.register_admin_command(["mention"])
 
 
@@ -534,13 +534,13 @@ def setnickname(bot, event, *args):
             _("Setting nickname to '{}'").format(nickname))
 
 
-def alltoggle(bot, event, *args):
+def toggleall(bot, event, *args):
     """Turn (@)all mentions on or off for this conversation. Usage: !wb alltoggle (on|off)"""
 
     if len(args) != 1 or (args[0].lower() != 'off' and args[0].lower() != 'on'):
         yield from bot.coro_send_message(
             event.conv,
-            _("Use '!wb alltoggle off' to disable (@)all mentions in this Hangout, or '!wb alltoggle on' to enable them."))
+            _("Use '!wb toggleall off' to disable (@)all mentions in this Hangout, or '!wb toggleall on' to enable them."))
         return
 
     ignoring = []
