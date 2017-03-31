@@ -557,7 +557,7 @@ def toggleall(bot, event, *args):
         if not ignoring_this:
             yield from bot.coro_send_message(
                 event.conv,
-                _("{}, you were not ignoring all in this conversation.").format(event.user.full_name))
+                _("{}, you were not ignoring all in this conversation.").format(event.user.first_name))
             return
 
         ignoring.remove(event.conv_id)
@@ -565,19 +565,19 @@ def toggleall(bot, event, *args):
 
         yield from bot.coro_send_message(
             event.conv,
-            _("{}, you are no longer ignoring all in this conversation.").format(event.user.full_name))
+            _("{}, you are no longer ignoring all in this conversation.").format(event.user.first_name))
         return
 
     elif cmd == 'on':
         if ignoring_this:
             yield from bot.coro_send_message(
                 event.conv,
-                _("{}, you were already ignoring all in this conversation.").format(event.user.full_name))
+                _("{}, you were already ignoring all in this conversation.").format(event.user.first_name))
             return
 
         ignoring.append(event.conv_id)
         bot.memory.set_by_path(["user_data", event.user.id_.chat_id, "ignoring_all"], ignoring)
         yield from bot.coro_send_message(
             event.conv,
-            _("{}, you are now ignoring all in this conversation.").format(event.user.full_name))
+            _("{}, you are now ignoring all in this conversation.").format(event.user.first_name))
         return
