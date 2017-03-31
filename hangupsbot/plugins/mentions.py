@@ -264,7 +264,7 @@ def mention(bot, event, *args):
                     user_tracking["ignored"].append(u.full_name)
                     continue
 
-            if _user_ignoring_all_for_conv(bot, u.id_.chat_id, event.conv_id):
+            if username_lower == "all" and _user_ignoring_all_for_conv(bot, u.id_.chat_id, event.conv_id):
                 user_tracking["ignored"].append(u.full_name)
                 continue
 
