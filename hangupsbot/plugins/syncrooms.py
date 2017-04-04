@@ -85,7 +85,7 @@ def _broadcast(bot, broadcast_list, context):
         passthru["norelay"] = []
     if __name__ in passthru["norelay"]:
         # prevent message broadcast duplication
-        logger.info("NORELAY:_broadcast {}".format(passthru["norelay"]))
+        #logger.info("NORELAY:_broadcast {}".format(passthru["norelay"]))
         return
     else:
         # halt messaging handler from re-relaying
@@ -148,7 +148,7 @@ def _repeat(bot, event, command):
         passthru["norelay"] = []
     if __name__ in passthru["norelay"]:
         # prevent message relay duplication
-        logger.info("NORELAY:_repeat {}".format(passthru["norelay"]))
+        #logger.info("NORELAY:_repeat {}".format(passthru["norelay"]))
         return
     else:
         # halt sending handler from re-relaying
@@ -177,7 +177,7 @@ def _repeat(bot, event, command):
     # relay messages to other rooms only
     for relay_id in syncout:
         if event.conv_id != relay_id:
-            logger.info("REPEATING: {} - {}".format(message, passthru))
+            #logger.info("REPEATING: {} - {}".format(message, passthru))
             yield from bot.coro_send_message(
                 relay_id,
                 message = "{}: {}".format(event.user.full_name, message),
