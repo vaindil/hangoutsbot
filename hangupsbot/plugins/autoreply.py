@@ -39,7 +39,6 @@ def _handle_autoreply(bot, event, command):
     else:
         raise RuntimeError("unhandled event type")
 
-<<<<<<< HEAD
     conv_tags = []
     tagged_list = []
 
