@@ -39,6 +39,7 @@ def _handle_autoreply(bot, event, command):
     else:
         raise RuntimeError("unhandled event type")
 
+<<<<<<< HEAD
     conv_tags = []
     tagged_list = []
 
@@ -53,6 +54,7 @@ def _handle_autoreply(bot, event, command):
     global_list = bot.get_config_suboption("GLOBAL", "autoreplies")
 
     r = False
+
     if autoreplies_list:
         for kwds, sentences in autoreplies_list:
 
@@ -126,6 +128,16 @@ def send_reply(bot, event, message):
         values["participants"] = [ event.conv.get_user(user_id)
                                    for user_id in event.conv_event.participant_ids ]
         values["participants_namelist"] = ", ".join([ u.full_name for u in values["participants"] ])
+
+    # tldr plugin integration: inject current conversation tldr text into auto-reply
+    if '{tldr}' in message:
+        args = {'conv_id': event.conv_id, 'params': ''}
+        try:
+            values["tldr"] = bot.call_shared("plugin_tldr_shared", bot, args)
+        except KeyError:
+            values["tldr"] = "**[TLDR UNAVAILABLE]**" # prevents exception
+            logger.warning("tldr plugin is not loaded")
+            pass
 
     envelopes = []
 
@@ -226,3 +238,76 @@ def autoreply(bot, event, cmd=None, *args):
         html = "<b>Autoreply config:</b> <br /> {}".format(value)
 
     yield from bot.coro_send_message(event.conv_id, html)
+
+
+"""FALLBACK CODE FOR IMAGE LINK VALIDATION AND UPLOAD
+* CODE IS DEPRECATED - DO NOT CHANGE OR ALTER
+* CODE MAY BE REMOVED AT ANY TIME
+* FOR FUTURE-PROOFING, INCLUDE [image] PLUGIN IN YOUR CONFIG.JSON
+"""
+
+import aiohttp, io, os, re
+
+def image_validate_link(image_uri, reject_googleusercontent=True):
+    """
+    validate and possibly mangle supplied image link
+    returns False, if not an image link
+            <string image uri>
+    """
+
+    if " " in image_uri:
+        """immediately reject anything with non url-encoded spaces (%20)"""
+        return False
+
+    probable_image_link = False
+
+    image_uri_lower = image_uri.lower()
+
+    if re.match("^(https?://)?([a-z0-9.]*?\.)?imgur.com/", image_uri_lower, re.IGNORECASE):
+        """imgur links can be supplied with/without protocol and extension"""
+        probable_image_link = True
+
+    elif image_uri_lower.startswith(("http://", "https://", "//")) and image_uri_lower.endswith((".png", ".gif", ".gifv", ".jpg", ".jpeg")):
+        """other image links must have protocol and end with valid extension"""
+        probable_image_link = True
+
+    if probable_image_link and reject_googleusercontent and ".googleusercontent." in image_uri_lower:
+        """reject links posted by google to prevent endless attachment loop"""
+        logger.debug("rejected link {} with googleusercontent".format(image_uri))
+        return False
+
+    if probable_image_link:
+
+        """special handler for imgur links"""
+        if "imgur.com" in image_uri:
+            if not image_uri.endswith((".jpg", ".gif", "gifv", "webm", "png")):
+                image_uri = image_uri + ".gif"
+            image_uri = "https://i.imgur.com/" + os.path.basename(image_uri)
+
+            """imgur wraps animations in player, force the actual image resource"""
+            image_uri = image_uri.replace(".webm",".gif")
+            image_uri = image_uri.replace(".gifv",".gif")
+
+        logger.debug('{} seems to be a valid image link'.format(image_uri))
+
+        return image_uri
+
+    return False
+
+@asyncio.coroutine
+def image_upload_single(image_uri, bot):
+    logger.info("getting {}".format(image_uri))
+    filename = os.path.basename(image_uri)
+    r = yield from aiohttp.request('get', image_uri)
+    raw = yield from r.read()
+    image_data = io.BytesIO(raw)
+    image_id = yield from bot._client.upload_image(image_data, filename=filename)
+    return image_id
+
+@asyncio.coroutine
+def image_validate_and_upload_single(text, bot, reject_googleusercontent=True):
+    image_id = False
+    image_link = image_validate_link(text, reject_googleusercontent=reject_googleusercontent)
+    if image_link:
+        image_id = yield from image_upload_single(image_link, bot)
+    return image_id

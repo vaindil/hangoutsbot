@@ -289,6 +289,7 @@ class HangupsBot(object):
         if not hangups_user:
             try:
                 hangups_user = self._user_list._user_dict[UserID]
+                hangups_user.definitionsource = "hangups"
             except KeyError as e:
                 pass
 
@@ -304,6 +305,7 @@ class HangupsBot(object):
                     _cached["photo_url"],
                     _cached["emails"],
                     _cached["is_self"] )
+                hangups_user.definitionsource = "permamem"
 
         """if all else fails, create an "unknown" user"""
         if not hangups_user:
@@ -314,6 +316,7 @@ class HangupsBot(object):
                 None,
                 [],
                 False )
+            hangups_user.definitionsource = False
 
         return hangups_user
 
@@ -396,8 +399,8 @@ class HangupsBot(object):
 
         if self.memory.exists(["user_data", chat_id, "1on1"]):
             conversation_id = self.memory.get_by_path(["user_data", chat_id, "1on1"])
-            conversation = FakeConversation(self._client, conversation_id)
-            #logger.info(_("memory: {} is 1on1 with {}").format(conversation_id, chat_id))
+            conversation = FakeConversation(self, conversation_id)
+           #logger.info(_("memory: {} is 1on1 with {}").format(conversation_id, chat_id))
         else:
             for c in self.list_conversations():
                 if len(c.users) == 2:
@@ -416,7 +419,7 @@ class HangupsBot(object):
 
 
     @asyncio.coroutine
-    def get_1to1(self, chat_id):
+    def get_1to1(self, chat_id, context=None):
         """find/create a 1-to-1 conversation with specified user
         config.autocreate-1to1 = false to revert to legacy behaviour of finding existing 1-to-1
         config.bot_introduction = "some text or html" to show to users when a new conversation
@@ -424,19 +427,25 @@ class HangupsBot(object):
         """
 
         if self.memory.exists(["user_data", chat_id, "optout"]):
-            if self.memory.get_by_path(["user_data", chat_id, "optout"]):
+            optout = self.memory.get_by_path(["user_data", chat_id, "optout"])
+            if( isinstance(optout, list)
+                    and context and 'initiator_convid' in context
+                    and context['initiator_convid'] in optout ):
+                #logger.info("get_1on1: user {} has optout for {}".format(chat_id, context['initiator_convid']))
+                return False
+            elif isinstance(optout, bool) and optout:
                 #logger.info("get_1on1: user {} has optout".format(chat_id))
                 return False
 
         if chat_id == self.user_self()["chat_id"]:
-            logger.warning("1to1 conversations with myself are not supported", stack_info=True)
+            #logger.warning("1to1 conversations with myself are not supported", stack_info=True)
             return False
 
         conversation = None
 
         if self.memory.exists(["user_data", chat_id, "1on1"]):
             conversation_id = self.memory.get_by_path(["user_data", chat_id, "1on1"])
-            conversation = FakeConversation(self._client, conversation_id)
+            conversation = FakeConversation(self, conversation_id)
             #logger.info("get_1on1: remembered {} for {}".format(conversation_id, chat_id))
         else:
             autocreate_1to1 = True if self.get_config_option('autocreate-1to1') is not False else False
@@ -464,7 +473,7 @@ class HangupsBot(object):
                     new_conversation_id = response.conversation.conversation_id.id
 
                     yield from self.coro_send_message(new_conversation_id, introduction)
-                    conversation = FakeConversation(self._client, new_conversation_id)
+                    conversation = FakeConversation(self, new_conversation_id)
                 except Exception as e:
                     logger.exception("GET_1TO1: failed to create 1-to-1 for user {}".format(chat_id))
             else:
@@ -703,6 +712,9 @@ class HangupsBot(object):
         if not context:
             context = {}
 
+        if "passthru" not in context:
+            context['passthru'] = {}
+
         if "base" not in context:
             # default legacy context
             context["base"] = self._messagecontext_legacy()
@@ -716,38 +728,7 @@ class HangupsBot(object):
         else:
             raise ValueError('could not identify conversation id')
 
-        # parse message strings to segments
-
-        if message is None:
-            segments = []
-        elif "parser" in context and context["parser"] is False and isinstance(message, str):
-            segments = [hangups.ChatMessageSegment(message)]
-        elif isinstance(message, str):
-            segments = simple_parse_to_segments(message)
-        elif isinstance(message, list):
-            segments = message
-        else:
-            raise TypeError("unknown message type supplied")
-
-        # determine OTR status
-
-        if "history" not in context:
-            context["history"] = True
-            try:
-                context["history"] = self.conversations.catalog[conversation_id]["history"]
-
-            except KeyError:
-                # rare scenario where a conversation was not refreshed
-                # once the initial message goes through, convmem will be updated
-                logger.warning("CORO_SEND_MESSAGE(): could not determine otr for {}".format(
-                    conversation_id))
-
-        if context["history"]:
-            otr_status = hangups_shim.schemas.OffTheRecordStatus.ON_THE_RECORD
-        else:
-            otr_status = hangups_shim.schemas.OffTheRecordStatus.OFF_THE_RECORD
-
-        broadcast_list = [(conversation_id, segments)]
+        broadcast_list = [(conversation_id, message, image_id)]
 
         # run any sending handlers
 
@@ -768,13 +749,12 @@ class HangupsBot(object):
 
             # send messages using FakeConversation as a workaround
 
-            _fc = FakeConversation(self._client, response[0])
+            _fc = FakeConversation(self, response[0])
 
             try:
                 yield from _fc.send_message( response[1],
-                                             image_id=image_id,
-                                             otr_status=otr_status,
-                                             context=context )
+                                             image_id = response[2],
+                                             context = context )
             except hangups.NetworkError as e:
                 logger.exception("CORO_SEND_MESSAGE: error sending {}".format(response[0]))
 

@@ -2,6 +2,7 @@ import logging
 import shlex
 import asyncio
 import inspect
+import time
 import uuid
 
 import hangups
@@ -23,6 +24,11 @@ class EventHandler:
         self._prefix_reprocessor = "uuid://"
         self._reprocessors = {}
 
+        self._passthrus = {}
+        self._contexts = {}
+        self._image_ids = {}
+        self._executables = {}
+
         self.pluggables = { "allmessages": [],
                             "call": [],
                             "membership": [],
@@ -36,6 +42,9 @@ class EventHandler:
                              self.attach_reprocessor,
                              forgiving=True )
 
+        bot.register_shared( 'chatbridge.behaviours',
+                             {},
+                             forgiving=True )
 
     def register_handler(self, function, type="message", priority=50):
         """registers extra event handlers"""
@@ -54,6 +63,16 @@ class EventHandler:
         self.pluggables[type].sort(key=lambda tup: tup[1])
 
         plugins.tracking.register_handler(function, type, priority)
+
+    def register_passthru(self, variable):
+        _id = str(uuid.uuid4())
+        self._passthrus[_id] = variable
+        return _id
+
+    def register_context(self, variable):
+        _id = str(uuid.uuid4())
+        self._contexts[_id] = variable
+        return _id
 
     def register_reprocessor(self, callable):
         _id = str(uuid.uuid4())
@@ -106,6 +125,23 @@ class EventHandler:
     """handler core"""
 
     @asyncio.coroutine
+    def image_uri_from(self, image_id, callback, *args, **kwargs):
+        """XXX: there isn't a direct way to resolve an image_id to the public url without
+        posting it first via the api. other plugins and functions can establish a short-lived
+        task to wait for the image id to be posted, and retrieve the url in an asyncronous way"""
+
+        ticks = 0
+        while True:
+            if image_id not in self._image_ids:
+                yield from asyncio.sleep(1)
+                ticks = ticks + 1
+                if ticks > 60:
+                    return False
+            else:
+                yield from callback(self._image_ids[image_id], *args, **kwargs)
+                return True
+
+    @asyncio.coroutine
     def run_reprocessor(self, id, event, *args, **kwargs):
         if id in self._reprocessors:
             is_coroutine = asyncio.iscoroutinefunction(self._reprocessors[id])
@@ -125,11 +161,20 @@ class EventHandler:
             else:
                 event.from_bot = False
 
-            """reprocessor - process event with hidden context from handler.attach_reprocessor()"""
+            """EventAnnotation - allows metadata to survive a trip to Google"""
 
+            event.passthru = {}
+            event.context = {}
             for annotation in event.conv_event._event.chat_message.annotation:
                 if annotation.type == 1025:
+                    # reprocessor - process event with hidden context from handler.attach_reprocessor()
                     yield from self.run_reprocessor(annotation.value, event)
+                elif annotation.type == 1026:
+                    event.passthru = self._passthrus[annotation.value]
+                    del self._passthrus[annotation.value]
+                elif annotation.type == 1027:
+                    event.context = self._contexts[annotation.value]
+                    del self._contexts[annotation.value]
 
             if len(event.conv_event.segments) > 0:
                 for segment in event.conv_event.segments:
@@ -139,12 +184,42 @@ class EventHandler:
                             yield from self.run_reprocessor(_id, event)
 
             """auto opt-in - opted-out users who chat with the bot will be opted-in again"""
-            if self.bot.conversations.catalog[event.conv_id]["type"] == "ONE_TO_ONE":
+            if not event.from_bot and self.bot.conversations.catalog[event.conv_id]["type"] == "ONE_TO_ONE":
                 if self.bot.memory.exists(["user_data", event.user.id_.chat_id, "optout"]):
-                    if self.bot.memory.get_by_path(["user_data", event.user.id_.chat_id, "optout"]):
+                    optout = self.bot.memory.get_by_path(["user_data", event.user.id_.chat_id, "optout"])
+                    if isinstance(optout, bool) and optout:
                         yield from command.run(self.bot, event, *["optout"])
                         logger.info("auto opt-in for {}".format(event.user.id_.chat_id))
                         return
+
+            """map image ids to their public uris in absence of any fixed server api
+               XXX: small memory leak over time as each id gets cached indefinitely"""
+
+            if( event.passthru
+                    and "original_request" in event.passthru
+                    and "image_id" in event.passthru["original_request"]
+                    and event.passthru["original_request"]["image_id"]
+                    and len(event.conv_event.attachments) == 1 ):
+
+                _image_id = event.passthru["original_request"]["image_id"]
+                _image_uri = event.conv_event.attachments[0]
+
+                if _image_id not in self._image_ids:
+                    self._image_ids[_image_id] = _image_uri
+                    logger.info("associating image_id={} with {}".format(_image_id, _image_uri))
+
+            """first occurence of an actual executable id needs to be handled as an event
+               XXX: small memory leak over time as each id gets cached indefinitely"""
+
+            if( event.passthru and "executable" in event.passthru and event.passthru["executable"] ):
+                if event.passthru["executable"] not in self._executables:
+                    original_message = event.passthru["original_request"]["message"]
+                    linked_hangups_user = event.passthru["original_request"]["user"]
+                    logger.info("current event is executable: {}".format(original_message))
+                    self._executables[event.passthru["executable"]] = time.time()
+                    event.from_bot = False
+                    event.text = original_message
+                    event.user = linked_hangups_user
 
             yield from self.run_pluggable_omnibus("allmessages", self.bot, event, command)
             if not event.from_bot:
