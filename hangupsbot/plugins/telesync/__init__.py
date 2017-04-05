@@ -848,7 +848,7 @@ def tg_command_sync_profile(bot, chat_id, args):
 
     yield from bot.sendMessage( chat_id,
                                 "please paste the following code in a private hangout with the bot: "
-                                    "/bot syncprofile {}".format(registration_code))
+                                    "!wb syncprofile {}".format(registration_code))
 
 
 @asyncio.coroutine
@@ -1175,7 +1175,7 @@ def _telesync_config(bot):
 def syncprofile(bot, event, *args):
     """link g+ and telegram profile together
 
-    /bot syncprofile <id> - syncs the g+ profile with the telegram profile, id will be posted on telegram"""
+    !wb syncprofile <id> - syncs the g+ profile with the telegram profile, id will be posted on telegram"""
 
     parameters = list(args)
 
@@ -1232,8 +1232,8 @@ def syncprofile(bot, event, *args):
 def telesync(bot, event, *args):
     """join abitrary hangouts and telegram groups together
 
-    * /bot telesync <telegram chat id> - set sync with telegram group
-    * /bot telesync - disable sync and clear sync data from memory"""
+    * !wb telesync <telegram chat id> - set sync with telegram group
+    * !wb telesync - disable sync and clear sync data from memory"""
 
     parameters = list(args)
     conv_id = event.conv_id

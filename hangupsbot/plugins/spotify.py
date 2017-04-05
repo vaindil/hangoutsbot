@@ -90,15 +90,15 @@ def _watch_for_music_link(bot, event, command):
 def spotify(bot, event, *args):
     """Commands to manage the Spotify playlist.
 
-    <b>/bot spotify</b> Returns whether Spotify is on or off.
+    <b>!wb spotify</b> Returns whether Spotify is on or off.
 
-    <b>/bot spotify on/off</b> Turns Spotify on or off.
+    <b>!wb spotify on/off</b> Turns Spotify on or off.
 
-    <b>/bot spotify playlist</b> Returns the chat's playlist URL.
+    <b>!wb spotify playlist</b> Returns the chat's playlist URL.
 
-    <b>/bot spotify <query></b> Directly adds a track to the playlist.
+    <b>!wb spotify <query></b> Directly adds a track to the playlist.
 
-    <b>/bot spotify remove <track></b> Removes the track from the playlist.
+    <b>!wb spotify remove <track></b> Removes the track from the playlist.
     """
     # Start with Spotify off.
     enabled = bot.conversation_memory_get(event.conv_id, "spotify_enabled")

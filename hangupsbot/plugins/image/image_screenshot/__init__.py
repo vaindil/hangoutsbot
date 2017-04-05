@@ -54,7 +54,7 @@ def _screencap(browser, url, filename):
 
 def seturl(bot, event, *args):
     """set url for current converation for the screenshot command. 
-    use /bot clearurl to clear the previous url before setting a new one.
+    use !wb clearurl to clear the previous url before setting a new one.
     """
     url = bot.conversation_memory_get(event.conv_id, 'url')
     if url is None:
@@ -64,7 +64,7 @@ def seturl(bot, event, *args):
 
     else:
         html = "<i><b>{}</b> URL already exists for this conversation!<br /><br />".format(event.user.full_name)
-        html += "<i>Clear it first with /bot clearurl before setting a new one."
+        html += "<i>Clear it first with !wb clearurl before setting a new one."
         yield from bot.coro_send_message(event.conv, html)
 
 

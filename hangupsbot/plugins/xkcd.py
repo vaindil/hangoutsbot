@@ -27,10 +27,10 @@ regexps = (
 @asyncio.coroutine
 def xkcd(bot, event, *args):
     """
-/bot xkcd latest: show latest comic
-/bot xkcd current: same
-/bot xkcd clear: clear comic cache
-/bot xkcd search <query>: search for a comic
+!wb xkcd latest: show latest comic
+!wb xkcd current: same
+!wb xkcd clear: clear comic cache
+!wb xkcd search <query>: search for a comic
 """
     
     if args == ("clear", ):

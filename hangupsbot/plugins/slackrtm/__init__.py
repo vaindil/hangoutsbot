@@ -34,7 +34,7 @@ the newly created Slack bot into any channel or group that you want to sync,
 and then use the command:
     @botname syncto <hangoutsid>
 
-Use "@botname help" for more help on the Slack side and /bot help <command> on
+Use "@botname help" for more help on the Slack side and !wb help <command> on
 the Hangouts side for more help.
 
 """

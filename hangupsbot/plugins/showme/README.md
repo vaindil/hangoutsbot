@@ -15,9 +15,9 @@ insecure get authorization technique). For example, if you have an IP cameras on
 Source names are _not_ case sensitive.
 
 ## Use
-One the plugin has been configured, images can be retrieved by saying `/bot showme <SOURCE>` where `<SOURCE>` is one of the source names in configuration. So for the example above `/bot showme odin` would retrieve a still from the configured camera URL and add it to the current conversation.
+One the plugin has been configured, images can be retrieved by saying `!wb showme <SOURCE>` where `<SOURCE>` is one of the source names in configuration. So for the example above `!wb showme odin` would retrieve a still from the configured camera URL and add it to the current conversation.
 
-You can retrieve a list of configured sources by saying `/bot showme help` or `/bot showme sources`. In either case the bot will reply with it's configured sources.
+You can retrieve a list of configured sources by saying `!wb showme help` or `!wb showme sources`. In either case the bot will reply with it's configured sources.
 
 ## Author
 Daniel Casner http://www.artificelab.com

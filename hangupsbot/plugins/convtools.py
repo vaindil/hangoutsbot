@@ -48,7 +48,7 @@ def _batch_add_users(bot, target_conv, chat_ids, batch_max=20):
 
 def addusers(bot, event, *args):
     """adds user(s) into a chat
-    Usage: /bot addusers
+    Usage: !wb addusers
     <user id(s)>
     [into <chat id>]"""
     list_add = []
@@ -77,7 +77,7 @@ def addusers(bot, event, *args):
 
 def addme(bot, event, *args):
     """add yourself into a chat
-    Usage: /bot addme <conv id>"""
+    Usage: !wb addme <conv id>"""
     if len(args) == 1:
         target_conv = args[0]
         yield from addusers(bot, event, *[event.user.id_.chat_id, "into", target_conv])
@@ -88,7 +88,7 @@ def addme(bot, event, *args):
 
 def createconversation(bot, event, *args):
     """create a new conversation with the bot and the specified user(s)
-    Usage: /bot createconversation <user id(s)>"""
+    Usage: !wb createconversation <user id(s)>"""
     parameters = list(args)
 
     force_group = True # only create groups
@@ -116,7 +116,7 @@ def createconversation(bot, event, *args):
 
 def refresh(bot, event, *args):
     """refresh a chat
-    Usage: /bot refresh
+    Usage: !wb refresh
     [conversation] <conversation id>
     [without|remove <user ids, space-separated if more than one>]
     [with|add <user id(s)>]
@@ -241,7 +241,7 @@ def refresh(bot, event, *args):
 
 def kick(bot, event, *args):
     """kick users from a conversation
-    Usage: /bot kick
+    Usage: !wb kick
     [<optional conversation id, current if not specified>]
     [<user ids, space-separated if more than one>]
     [quietly]"""

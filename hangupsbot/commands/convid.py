@@ -64,7 +64,7 @@ def convecho(bot, event, *args):
                     text = _("<em>command echo blocked</em>")
                     convlist = bot.conversations.get(filter=event.conv_id)
     elif len(posix_args) == 1 and posix_args[0].startswith("id:"):
-        """specialised error message for /bot echo (implied convid: <event.conv_id>)"""
+        """specialised error message for !wb echo (implied convid: <event.conv_id>)"""
         text = _("<em>missing text</em>")
         convlist = bot.conversations.get(filter=event.conv_id)
     else:
@@ -103,7 +103,7 @@ def convrename(bot, event, *args):
                     client_generated_id = bot._client.get_client_generated_id() )))
 
     elif len(posix_args) == 1 and posix_args[0].startswith("id:"):
-        """specialised error message for /bot rename (implied convid: <event.conv_id>)"""
+        """specialised error message for !wb rename (implied convid: <event.conv_id>)"""
         text = _("<em>missing title</em>")
         convlist = bot.conversations.get(filter=event.conv_id)
         yield from command.run(bot, event, *["convecho", "id:" + event.conv_id, text])

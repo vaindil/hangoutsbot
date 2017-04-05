@@ -61,7 +61,7 @@ def sendSource(bot, event, name, imgLink):
         yield from bot.coro_send_message(event.conv.id_, None, image_id=image_id)
 
 def showme(bot, event, *args):
-    """Retrieve images from showme sources by saying: "/bot showme SOURCE" or list sources by saying "/bot showme sources" or all sources by saying "/bot showme all" """
+    """Retrieve images from showme sources by saying: "!wb showme SOURCE" or list sources by saying "!wb showme sources" or all sources by saying "!wb showme all" """
     sources = bot.get_config_option("showme")
     if not len(args):
         yield from bot.coro_send_message(event.conv, _("Show you what?"))

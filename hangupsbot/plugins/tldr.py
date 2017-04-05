@@ -50,11 +50,11 @@ def tldrecho(bot, event, *args):
 def tldr(bot, event, *args):
     """read and manage tldr entries for a given conversation
 
-    * /bot tldr <number> - retrieve a specific numbered entry
-    * /bot tldr <text> - add <text> as an entry
-    * /bot tldr edit <number> <text> - replace the specified entry with the new <text>
-    * /bot tldr clear <number> - clear specified numbered entry
-    * /bot tldr clear all - clear all entries"""
+    * !wb tldr <number> - retrieve a specific numbered entry
+    * !wb tldr <text> - add <text> as an entry
+    * !wb tldr edit <number> <text> - replace the specified entry with the new <text>
+    * !wb tldr clear <number> - clear specified numbered entry
+    * !wb tldr clear all - clear all entries"""
 
     # If no memory entry exists for the conversation, create it.
     if not bot.memory.exists(['conversations']):

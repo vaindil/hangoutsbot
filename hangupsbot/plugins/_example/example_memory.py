@@ -11,7 +11,7 @@ def _initialise(bot):
 
 def rememberme(bot, event, *args):
     """remember value for current user, memory must be empty.
-    use /bot forgetme to clear previous storage
+    use !wb forgetme to clear previous storage
     """
 
     text = bot.user_memory_get(event.user.id_.chat_id, 'test_memory')
@@ -65,7 +65,7 @@ def forgetme(bot, event, *args):
 
 def rememberchat(bot, event, *args):
     """remember value for current conversation, memory must be empty.
-    use /bot forgetchat to clear previous storage
+    use !wb forgetchat to clear previous storage
     """
 
     text = bot.conversation_memory_get(event.conv_id, 'test_memory')

@@ -137,7 +137,7 @@ def perform_drawing(bot, event, *args):
         /me draw[s] [a[n]] sticks[s] => draws from "stick", "sticks" or "stickses"
         /me draws[s]<unrecognised> => draws from "default"
 
-        note: to prepare lotteries/drawings, see /bot prepare ...
+        note: to prepare lotteries/drawings, see !wb prepare ...
 
         XXX: check is for singular, plural "-s" and plural "-es"
     """

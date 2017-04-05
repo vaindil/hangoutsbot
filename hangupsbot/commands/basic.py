@@ -21,7 +21,7 @@ def _initialise(bot): pass # prevents commands from being automatically added
 
 @command.register
 def help(bot, event, cmd=None, *args):
-    """list supported commands, /bot help <command> will show additional details"""
+    """list supported commands, !wb help <command> will show additional details"""
     help_lines = []
     link_to_guide = bot.get_config_suboption(event.conv_id, 'link_to_guide')
     admins_list = bot.get_config_suboption(event.conv_id, 'admins')
@@ -62,7 +62,7 @@ def help(bot, event, cmd=None, *args):
 
         help_lines.append("")
         help_lines.append("<b>Command-specific help:</b>")
-        help_lines.append("/bot help <command name>")
+        help_lines.append("!wb help <command name>")
 
         bot_aliases = [ _alias for _alias in bot._handlers.bot_command if len(_alias) < 9 ]
         if len(bot_aliases) > 1:
@@ -141,9 +141,9 @@ def ping(bot, event, *args):
 def optout(bot, event, *args):
     """toggle opt-out of bot private messages globally or on a per-conversation basis:
 
-    * /bot optout - toggles global optout on/off, or displays per-conversation optouts
-    * /bot optout [name|convid] - toggles per-conversation optout (overrides global settings)
-    * /bot optout all - clears per-conversation opt-out and forces global optout"""
+    * !wb optout - toggles global optout on/off, or displays per-conversation optouts
+    * !wb optout [name|convid] - toggles per-conversation optout (overrides global settings)
+    * !wb optout all - clears per-conversation opt-out and forces global optout"""
 
     chat_id = event.user.id_.chat_id
     bot.initialise_memory(chat_id, "user_data")

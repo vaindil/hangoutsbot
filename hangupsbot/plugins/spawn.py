@@ -42,13 +42,13 @@ ending your commands with '--' to avoid allowing users to masqurade
 arguments as options, should that be an issue for a particular command.
 
 While the shell is bypassed, so no file redirection or command chanining
-is allowed (e.g. `/bot motd ; rm -rf /` will fail), if `allow_args` is
+is allowed (e.g. `!wb motd ; rm -rf /` will fail), if `allow_args` is
 true, you are passing unsanitised arguments off to a command.  Even if,
 as in the `motd` example above, where the command has '--' as part of it,
 so that the user cannot pass in any additional switch based arguments,
 unintended consequences can occur:
 
-    /bot motd /etc/passwd
+    !wb motd /etc/passwd
 
 would execute:
 

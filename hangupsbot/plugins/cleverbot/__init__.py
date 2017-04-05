@@ -8,7 +8,7 @@ configuration
 
 set the cleverbot API key by saying:
 
-/bot config set cleverbot_api_key "<API KEY>"
+!wb config set cleverbot_api_key "<API KEY>"
 
 read more (and register) on the cleverbot API here:
     https://www.cleverbot.com/api/
@@ -94,7 +94,7 @@ def _get_cw_for_chat(bot, event):
 def chat(bot, event, *args):
     """chat with cleverbot
 
-    example: /bot chat hi cleverbot!"""
+    example: !wb chat hi cleverbot!"""
 
     cw = _get_cw_for_chat(bot, event)
     if not cw:

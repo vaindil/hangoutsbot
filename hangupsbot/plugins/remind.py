@@ -8,7 +8,7 @@ def remindme(bot, event, dly, *args):
     """
     Posts a custom message to a 1on1 after a delay
 
-    /bot remindme <b>delay (minutes)</b> <i>Message</i>
+    !wb remindme <b>delay (minutes)</b> <i>Message</i>
     """
 
     if not args:
@@ -29,7 +29,7 @@ def remindall(bot, event, dly, *args):
     """
     Posts a custom message to the chat after a delay
 
-    /bot remindall <b>delay (minutes)</b> <i>Message</i>
+    !wb remindall <b>delay (minutes)</b> <i>Message</i>
     """
 
     if not args:

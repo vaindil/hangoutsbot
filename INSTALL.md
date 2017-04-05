@@ -87,7 +87,7 @@ This will be accomplished using the supplied **starter** plugin with
    is activated. Accept the invite (and message) from your own gmail
    account.
 4. Back on your hangouts client, send the following message:
-   `/bot iamspartacus`
+   `!wb iamspartacus`
 5. The bot should reply with "configuring first admin" or a similar
    message.
 
@@ -112,7 +112,7 @@ For further information, please see the README file and wiki.
   `/<username>/.local/share/hangupsbot/hangupsbot.log` - 
   note: this file is more useful for developers and may be quite verbose
 * You can verify the location of your active `config.json` by sending
-  the following command to the bot via hangouts: `/bot files` (with
+  the following command to the bot via hangouts: `!wb files` (with
   the **starter** plugin active)
 
 

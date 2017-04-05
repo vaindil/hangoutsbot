@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 def slacks(bot, event, *args):
     """list all configured slack teams
 
-       usage: /bot slacks"""
+       usage: !wb slacks"""
 
     lines = [ "**Configured Slack teams:**" ]
 
@@ -24,7 +24,7 @@ def slacks(bot, event, *args):
 def slack_identify(bot, event, *args):
     """link your slack user
 
-    usage: /bot slack_identify <teamname> <username>"""
+    usage: !wb slack_identify <teamname> <username>"""
 
     parameters = list(args)
     if len(parameters) < 2:
@@ -65,7 +65,7 @@ def slack_identify(bot, event, *args):
 def slack_channels(bot, event, *args):
     """list all slack channels available in specified slack team
 
-    usage: /bot slack_channels <teamname>"""
+    usage: !wb slack_channels <teamname>"""
 
     if len(args) != 1:
         yield from bot.coro_send_message(event.conv_id, "specify slack team to get list of channels")
@@ -78,7 +78,7 @@ def slack_channels(bot, event, *args):
             slackrtm = s
             break
     if not slackrtm:
-        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _/bot slacks_ to list all teams".format(slackname))
+        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _!wb slacks_ to list all teams".format(slackname))
         return
 
     lines = ["**Channels:**"]
@@ -101,7 +101,7 @@ def slack_channels(bot, event, *args):
 def slack_users(bot, event, *args):
     """list all slack channels available in specified slack team
 
-        usage: /bot slack_users <team> <channel>"""
+        usage: !wb slack_users <team> <channel>"""
 
     if len(args) >= 3:
         honame = ' '.join(args[2:])
@@ -118,7 +118,7 @@ def slack_users(bot, event, *args):
             slackrtm = s
             break
     if not slackrtm:
-        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _/bot slacks_ to list all teams".format(slackname))
+        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _!wb slacks_ to list all teams".format(slackname))
         return
 
     slackrtm.update_channelinfos()
@@ -127,7 +127,7 @@ def slack_users(bot, event, *args):
     if not channelname:
         yield from bot.coro_send_message(
             event.conv_id,
-            "there is no channel with name **{0}** in **{1}**, use _/bot slack_channels {1}_ to list all channels".format(channelid, slackname) )
+            "there is no channel with name **{0}** in **{1}**, use _!wb slack_channels {1}_ to list all channels".format(channelid, slackname) )
         return
 
     lines = [ "**Slack users in channel {}**:".format(channelname) ]
@@ -142,7 +142,7 @@ def slack_users(bot, event, *args):
 def slack_listsyncs(bot, event, *args):
     """list current conversations we are syncing
 
-    usage: /bot slack_listsyncs"""
+    usage: !wb slack_listsyncs"""
 
     lines = [ "**Currently synced:**" ]
 
@@ -167,7 +167,7 @@ def slack_listsyncs(bot, event, *args):
 def slack_syncto(bot, event, *args):
     """start syncing the current hangout to a given slack team/channel
 
-    usage: /bot slack_syncto <teamname> <channelid>"""
+    usage: !wb slack_syncto <teamname> <channelid>"""
 
     if len(args) >= 3:
         honame = ' '.join(args[2:])
@@ -184,7 +184,7 @@ def slack_syncto(bot, event, *args):
             slackrtm = s
             break
     if not slackrtm:
-        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _/bot slacks_ to list all teams".format(slackname))
+        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _!wb slacks_ to list all teams".format(slackname))
         return
 
     channelid = args[1]
@@ -192,7 +192,7 @@ def slack_syncto(bot, event, *args):
     if not channelname:
         yield from bot.coro_send_message(
             event.conv_id,
-            "there is no channel with name **{0}** in **{1}**, use _/bot slack_channels {1}_ to list all channels".format(channelid, slackname) )
+            "there is no channel with name **{0}** in **{1}**, use _!wb slack_channels {1}_ to list all channels".format(channelid, slackname) )
         return
 
     try:
@@ -207,7 +207,7 @@ def slack_syncto(bot, event, *args):
 def slack_disconnect(bot, event, *args):
     """stop syncing the current hangout with given slack team and channel
 
-    usage: /bot slack_disconnect <teamname> <channelid>"""
+    usage: !wb slack_disconnect <teamname> <channelid>"""
 
     if len(args) != 2:
         yield from bot.coro_send_message(event.conv_id, "specify slack team and channel")
@@ -220,7 +220,7 @@ def slack_disconnect(bot, event, *args):
             slackrtm = s
             break
     if not slackrtm:
-        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _/bot slacks_ to list all teams".format(slackname))
+        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _!wb slacks_ to list all teams".format(slackname))
         return
 
     channelid = args[1]
@@ -228,7 +228,7 @@ def slack_disconnect(bot, event, *args):
     if not channelname:
         yield from bot.coro_send_message(
             event.conv_id,
-            "there is no channel with name **{0}** in **{1}**, use _/bot slack_channels {1}_ to list all channels".format(channelid, slackname) )
+            "there is no channel with name **{0}** in **{1}**, use _!wb slack_channels {1}_ to list all channels".format(channelid, slackname) )
         return
 
     try:
@@ -243,7 +243,7 @@ def slack_disconnect(bot, event, *args):
 def slack_setsyncjoinmsgs(bot, event, *args):
     """enable or disable sending notifications any time someone joins/leaves/adds/invites/kicks
 
-    usage: /bot slack_setsyncjoinmsgs <teamname> <channelid> {true|false}"""
+    usage: !wb slack_setsyncjoinmsgs <teamname> <channelid> {true|false}"""
 
     if len(args) != 3:
         yield from bot.coro_send_message(event.conv_id, "specify exactly three parameters: slack team, slack channel, and \"true\" or \"false\"")
@@ -256,7 +256,7 @@ def slack_setsyncjoinmsgs(bot, event, *args):
             slackrtm = s
             break
     if not slackrtm:
-        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _/bot slacks_ to list all teams".format(slackname))
+        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _!wb slacks_ to list all teams".format(slackname))
         return
 
     channelid = args[1]
@@ -264,7 +264,7 @@ def slack_setsyncjoinmsgs(bot, event, *args):
     if not channelname:
         yield from bot.coro_send_message(
             event.conv_id,
-            "there is no channel with name **{0}** in **{1}**, use _/bot slack_channels {1}_ to list all channels".format(channelid, slackname) )
+            "there is no channel with name **{0}** in **{1}**, use _!wb slack_channels {1}_ to list all channels".format(channelid, slackname) )
         return
 
     flag = args[2]
@@ -291,7 +291,7 @@ def slack_setsyncjoinmsgs(bot, event, *args):
 def slack_setimageupload(bot, event, *args):
     """enable/disable image upload between the synced conversations (default: enabled)
 
-    usage: /bot slack_setimageupload <teamname> <channelid> {true|false}"""
+    usage: !wb slack_setimageupload <teamname> <channelid> {true|false}"""
 
     if len(args) != 3:
         yield from bot.coro_send_message(event.conv_id, "specify exactly three parameters: slack team, slack channel, and \"true\" or \"false\"")
@@ -304,7 +304,7 @@ def slack_setimageupload(bot, event, *args):
             slackrtm = s
             break
     if not slackrtm:
-        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _/bot slacks_ to list all teams".format(slackname))
+        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _!wb slacks_ to list all teams".format(slackname))
         return
 
     channelid = args[1]
@@ -312,7 +312,7 @@ def slack_setimageupload(bot, event, *args):
     if not channelname:
         yield from bot.coro_send_message(
             event.conv_id,
-            "there is no channel with name **{0}** in **{1}**, use _/bot slack_channels {1}_ to list all channels".format(channelid, slackname) )
+            "there is no channel with name **{0}** in **{1}**, use _!wb slack_channels {1}_ to list all channels".format(channelid, slackname) )
         return
 
     flag = args[2]
@@ -340,7 +340,7 @@ def slack_sethotag(bot, event, *args):
     """sets the identity of current hangout when syncing this conversation
     (default: title of this hangout when sync was set up, use 'none' to disable tagging)
 
-    usage: /bot slack_hotag <teamname> <channelid> {<tag>|none}"""
+    usage: !wb slack_hotag <teamname> <channelid> {<tag>|none}"""
 
     if len(args) < 3:
         yield from bot.coro_send_message(event.conv_id, "specify: slack team, slack channel, and a tag (\"none\" to disable)")
@@ -353,7 +353,7 @@ def slack_sethotag(bot, event, *args):
             slackrtm = s
             break
     if not slackrtm:
-        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _/bot slacks_ to list all teams".format(slackname))
+        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _!wb slacks_ to list all teams".format(slackname))
         return
 
     channelid = args[1]
@@ -361,7 +361,7 @@ def slack_sethotag(bot, event, *args):
     if not channelname:
         yield from bot.coro_send_message(
             event.conv_id,
-            "there is no channel with name **{0}** in **{1}**, use _/bot slack_channels {1}_ to list all channels".format(channelid, slackname) )
+            "there is no channel with name **{0}** in **{1}**, use _!wb slack_channels {1}_ to list all channels".format(channelid, slackname) )
         return
 
     if len(args) == 3:
@@ -392,7 +392,7 @@ def slack_setslacktag(bot, event, *args):
     """sets the identity of the specified slack conversation synced to the current hangout
     (default: name of the slack team, use 'none' to disable tagging)
 
-    usage: /bot slack_slacktag <teamname> <channelid> {<tag>|none}"""
+    usage: !wb slack_slacktag <teamname> <channelid> {<tag>|none}"""
 
     if len(args) < 3:
         yield from bot.coro_send_message(event.conv_id, "specify: slack team, slack channel, and a tag (\"none\" to disable)")
@@ -405,7 +405,7 @@ def slack_setslacktag(bot, event, *args):
             slackrtm = s
             break
     if not slackrtm:
-        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _/bot slacks_ to list all teams".format(slackname))
+        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _!wb slacks_ to list all teams".format(slackname))
         return
 
     channelid = args[1]
@@ -413,7 +413,7 @@ def slack_setslacktag(bot, event, *args):
     if not channelname:
         yield from bot.coro_send_message(
             event.conv_id,
-            "there is no channel with name **{0}** in **{1}**, use _/bot slack_channels {1}_ to list all channels".format(channelid, slackname) )
+            "there is no channel with name **{0}** in **{1}**, use _!wb slack_channels {1}_ to list all channels".format(channelid, slackname) )
         return
 
     if len(args) == 3:
@@ -443,7 +443,7 @@ def slack_setslacktag(bot, event, *args):
 def slack_showslackrealnames(bot, event, *args):
     """enable/disable display of realnames instead of usernames in messages synced from slack (default: disabled)
 
-    usage: /bot slack_showslackrealnames <teamname> <channelid> {true|false}"""
+    usage: !wb slack_showslackrealnames <teamname> <channelid> {true|false}"""
 
     if len(args) != 3:
         yield from bot.coro_send_message(event.conv_id, "specify exactly three parameters: slack team, slack channel, and \"true\" or \"false\"")
@@ -456,7 +456,7 @@ def slack_showslackrealnames(bot, event, *args):
             slackrtm = s
             break
     if not slackrtm:
-        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _/bot slacks_ to list all teams".format(slackname))
+        yield from bot.coro_send_message(event.conv_id, "there is no slack team with name **{}**, use _!wb slacks_ to list all teams".format(slackname))
         return
 
     channelid = args[1]
@@ -464,7 +464,7 @@ def slack_showslackrealnames(bot, event, *args):
     if not channelname:
         yield from bot.coro_send_message(
             event.conv_id,
-            "there is no channel with name **{0}** in **{1}**, use _/bot slack_channels {1}_ to list all channels".format(channelid, slackname) )
+            "there is no channel with name **{0}** in **{1}**, use _!wb slack_channels {1}_ to list all channels".format(channelid, slackname) )
         return
 
     flag = args[2]
