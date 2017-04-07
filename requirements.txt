@@ -23,6 +23,7 @@ git+https://github.com/loisaidasam/pyslack.git  # plugins: slack
 slackclient >=0.16                              # plugins: slackrtm
 selenium                                        # plugins: image_screenshot
 telepot >= 10.5                                 # plugins: telesync
+discord.py
 cleverwrap                                      # plugins: cleverbot
 TwitterAPI                                      # plugins: twitter
 google-api-python-client                        # plugins: spotify
