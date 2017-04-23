@@ -196,7 +196,7 @@ class SlackMessage(object):
 
 
 class SlackRTMSync(object):
-    def __init__(self, hangoutsbot, channelid, hangoutid, hotag, slacktag, sync_joins=True, image_upload=True, showslackrealnames=False):
+    def __init__(self, hangoutsbot, channelid, hangoutid, hotag, slacktag, sync_joins=True, image_upload=True, showslackrealnames=False, showhorealnames="real"):
         self.channelid = channelid
         self.hangoutid = hangoutid
         self.hotag = hotag
@@ -204,6 +204,7 @@ class SlackRTMSync(object):
         self.image_upload = image_upload
         self.slacktag = slacktag
         self.showslackrealnames = showslackrealnames
+        self.showhorealnames = showhorealnames
 
         self._bridgeinstance = BridgeInstance(hangoutsbot, "slackrtm")
         self._bridgeinstance.set_extra_configuration(hangoutid, channelid)
@@ -221,9 +222,12 @@ class SlackRTMSync(object):
             slacktag = sync_dict['slacktag']
         else:
             slacktag = 'NOT_IN_CONFIG'
-        realnames = True
+        slackrealnames = True
         if 'showslackrealnames' in sync_dict and not sync_dict['showslackrealnames']:
-            realnames = False
+            slackrealnames = False
+        horealnames = 'real'
+        if 'showhorealnames' in sync_dict:
+            horealnames = sync_dict['showhorealnames']
         return SlackRTMSync( hangoutsbot,
                              sync_dict['channelid'],
                              sync_dict['hangoutid'],
@@ -231,7 +235,8 @@ class SlackRTMSync(object):
                              slacktag,
                              sync_joins,
                              image_upload,
-                             realnames )
+                             slackrealnames,
+                             horealnames)
 
     def toDict(self):
         return {
@@ -242,15 +247,17 @@ class SlackRTMSync(object):
             'image_upload': self.image_upload,
             'slacktag': self.slacktag,
             'showslackrealnames': self.showslackrealnames,
+            'showhorealnames': self.showhorealnames,
             }
 
     def getPrintableOptions(self):
-        return 'hotag="%s", sync_joins=%s, image_upload=%s, slacktag=%s, showslackrealnames=%s' % (
-            self.hotag if self.hotag else 'NONE',
+        return 'hotag=%s, sync_joins=%s, image_upload=%s, slacktag=%s, showslackrealnames=%s, showhorealnames="%s"' % (
+            '"{}"'.format(self.hotag) if self.hotag else 'NONE',
             self.sync_joins,
             self.image_upload,
-            self.slacktag if self.slacktag else 'NONE',
+            '"{}"'.format(self.slacktag) if self.slacktag else 'NONE',
             self.showslackrealnames,
+            self.showhorealnames,
             )
 
 
@@ -435,6 +442,15 @@ class SlackRTM(object):
             channelinfos[c['id']] = c
         self.channelinfos = channelinfos
 
+    def get_channelgroupname(self, channel, default=None):
+        if channel.startswith('C'):
+            return self.get_channelname(channel, default)
+        if channel.startswith('G'):
+            return self.get_groupname(channel, default)
+        if channel.startswith('D'):
+            return 'DM'
+        return default
+
     def get_channelname(self, channel, default=None):
         if channel not in self.channelinfos:
             logger.debug('channel not found, reloading channels')
@@ -491,7 +507,8 @@ class SlackRTM(object):
             if linktext != "":
                 out = "#%s" % linktext
             else:
-                out = "#%s" % self.get_channelname(match.group(3), 'unknown:%s' % match.group(3))
+                out = "#%s" % self.get_channelgroupname(match.group(3),
+                                                        'unknown:%s' % match.group(3))
         else:
             linktarget = match.group(1)
             if linktext == "":
@@ -684,6 +701,28 @@ class SlackRTM(object):
         _slackrtm_conversations_set(self.bot, self.name, syncs)
         return
 
+    def config_showhorealnames(self, channel, hangoutid, realnames):
+        sync = None
+        for s in self.syncs:
+            if s.channelid == channel and s.hangoutid == hangoutid:
+                sync = s
+        if not sync:
+            raise NotSyncingError
+
+        logger.info('setting showhorealnames=%s for sync=%s', realnames, sync.toDict())
+        sync.showhorealnames = realnames
+
+        syncs = _slackrtm_conversations_get(self.bot, self.name)
+        if not syncs:
+            syncs = []
+        for s in syncs:
+            if s['channelid'] == channel and s['hangoutid'] == hangoutid:
+                syncs.remove(s)
+        logger.info('storing new sync=%s with changed hotag', s)
+        syncs.append(sync.toDict())
+        _slackrtm_conversations_set(self.bot, self.name, syncs)
+        return
+
     def handle_reply(self, reply):
         """handle incoming replies from slack"""
 
@@ -695,16 +734,15 @@ class SlackRTM(object):
             logger.exception('error parsing Slack reply: %s(%s)', type(e), str(e))
             return
 
+        # commands can be processed even from unsynced channels
         try:
-            """XXX: emulate behaviour of legacy slackrtm - listens EVERYWHERE"""
             slackCommandHandler(self, msg)
         except Exception as e:
             logger.exception('error in handleCommands: %s(%s)', type(e), str(e))
 
         syncs = self.get_syncs(channelid=msg.channel)
         if not syncs:
-            """since slackRTM listens to everything, we need a quick way to filter out noise. this also
-            has the added advantage of making slackrtm play well with other slack plugins"""
+            # stop processing replies if no syncs are available (optimisation)
             return
 
         reffmt = re.compile(r'<((.)([^|>]*))((\|)([^>]*)|([^>]*))>')
@@ -717,7 +755,7 @@ class SlackRTM(object):
 
             if msg.from_ho_id != sync.hangoutid:
                 username = msg.realname4ho if sync.showslackrealnames else msg.username4ho
-                channel_name = self.get_channelname(msg.channel)
+                channel_name = self.get_channelgroupname(msg.channel)
 
                 if msg.file_attachment:
                     if sync.image_upload:
@@ -783,15 +821,24 @@ class SlackRTM(object):
         for sync in active_syncs:
             bridge_user = sync._bridgeinstance._get_user_details(user, { "event": event })
 
-            display_name = bridge_user["preferred_name"]
+            extras = []
+            if sync.showhorealnames == "nick":
+                display_name = bridge_user["nickname"] or bridge_user["full_name"]
+            else:
+                display_name = bridge_user["full_name"]
+                if (sync.showhorealnames == "both" and bridge_user["nickname"] and
+                        not bridge_user["full_name"] == bridge_user["nickname"]):
+                    extras.append(bridge_user["nickname"])
 
-            if sync.hotag:
-                if sync.hotag is True:
-                    if "chatbridge" in event.passthru and event.passthru["chatbridge"]["source_title"]:
-                        chat_title = event.passthru["chatbridge"]["source_title"]
-                        display_name += " ({})".format(chat_title)
-                elif sync.hotag is not True and sync.hotag:
-                    display_name += " ({})".format(sync.hotag)
+            if sync.hotag is True:
+                if "chatbridge" in event.passthru and event.passthru["chatbridge"]["source_title"]:
+                    chat_title = event.passthru["chatbridge"]["source_title"]
+                    extras.append(chat_title)
+            elif sync.hotag:
+                extras.append(sync.hotag)
+
+            if extras:
+                display_name = "{} ({})".format(display_name, ", ".join(extras))
 
             slackrtm_fragment = "<ho://{}/{}| >".format(conv_id, bridge_user["chat_id"] or bridge_user["preferred_name"])
 
@@ -908,6 +955,7 @@ class SlackRTMThread(threading.Thread):
         self._loop = loop
         self._config = config
         self._listener = None
+        self.isFullyLoaded = threading.Event()
 
     def run(self):
         logger.debug('SlackRTMThread.run()')
@@ -920,6 +968,7 @@ class SlackRTMThread(threading.Thread):
             self._listener = SlackRTM(self._config, self._bot, self._loop, threaded=True)
             _slackrtms.append(self._listener)
             last_ping = int(time.time())
+            self.isFullyLoaded.set()
             while True:
                 if self.stopped():
                     return

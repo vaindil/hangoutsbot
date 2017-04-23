@@ -55,6 +55,7 @@ from .commands_hangouts import ( slacks,
                                  slack_sethotag,
                                  slack_setslacktag,
                                  slack_showslackrealnames,
+                                 slack_showhorealnames,
                                  slack_identify )
 from .core import SlackRTMThread
 from .utils import _slackrtms
@@ -78,6 +79,7 @@ def _initialise(bot):
             t = SlackRTMThread(bot, loop, sinkConfig)
             t.daemon = True
             t.start()
+            t.isFullyLoaded.wait()
             threads.append(t)
     logger.info("%d sink thread(s) started", len(threads))
 
@@ -94,7 +96,8 @@ def _initialise(bot):
                                      "slack_sethotag",
                                      "slack_users",
                                      "slack_setslacktag",
-                                     "slack_showslackrealnames" ])
+                                     "slack_showslackrealnames",
+                                     "slack_showhorealnames" ])
 
     plugins.register_user_command([ "slack_identify" ])
 

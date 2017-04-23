@@ -6,8 +6,8 @@ import logging
 import plugins
 import pprint
 import random
-import hangups
 
+import hangups
 
 logger = logging.getLogger(__name__)
 
