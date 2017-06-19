@@ -1,0 +1,6 @@
+tree f21b75d3cf326c36185c2cfa5b102bbe017c3788
+parent d2306268619371a7d874e5438490297fb801ee24
+author Michal Krenek (Mikos) <m.krenek@gmail.com> 1410998642 +0200
+committer Michal Krenek (Mikos) <m.krenek@gmail.com> 1410998642 +0200
+
+First wave of refactoring (modularization)
