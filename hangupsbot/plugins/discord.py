@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 client = discord.Client()
 _bot = None
 sending = {}
-emote_re = re.compile('<:(.*?):\d*>', re.I | re.M | re.U)
+emote_re = re.compile('<(:.*?:)\d*>', re.I | re.M | re.U)
 
 already_seen_discord_messages = []
 
