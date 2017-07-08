@@ -36,12 +36,14 @@ import logging
 import aiohttp
 import io
 import copy
+import re
 
 logger = logging.getLogger(__name__)
 
 client = discord.Client()
 _bot = None
 sending = {}
+emote_re = re.compile('<(:.*?:)\d*>', re.I | re.M | re.U)
 
 already_seen_discord_messages = []
 
@@ -66,7 +68,7 @@ def on_message(message):
     conv_config = _bot.config.get_by_path(["conversations"])
     for conv_id, config in conv_config.items():
         if config.get("discord_sync") == message.channel.id:
-            msg = "<b>{}</b>: {}".format(message.author.display_name, message.clean_content)
+            msg = "<b>{}</b>: {}".format(message.author.display_name, emote_re.sub(r"\1", message.clean_content))
             if conv_id not in sending:
               sending[conv_id] = 0
             sending[conv_id] += 1
