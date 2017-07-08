@@ -60,8 +60,8 @@ def on_message(message):
         return
     already_seen_discord_messages.append(message.id)
     global sending
-    if 'whereami' in message.content:
-        yield from client.send_message(message.channel, message.channel.id)
+    #if 'whereami' in message.content:
+    #    yield from client.send_message(message.channel, message.channel.id)
     logger.debug("message in discord channel {} - {}, {}".format(message.channel.id, message.system_content, message.type))
     conv_config = _bot.config.get_by_path(["conversations"])
     for conv_id, config in conv_config.items():
