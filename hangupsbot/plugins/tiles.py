@@ -16,7 +16,7 @@ def _initialise(bot):
 
 
 def tiles(bot, event, *args):
-    feed = feedparser.parse("https://wazestatus.wordpress.com/category/main/feed/")
+    feed = feedparser.parse("https://status.waze.com/feeds/posts/default")
     na = None
     intl = None
     nadate = None
@@ -65,7 +65,7 @@ def tiles(bot, event, *args):
                 hangups.ChatMessageSegment("\n", hangups.SegmentType.LINE_BREAK),
                 hangups.ChatMessageSegment("\n", hangups.SegmentType.LINE_BREAK),
                 hangups.ChatMessageSegment("Full information: "),
-                hangups.ChatMessageSegment("https://wazestatus.wordpress.com",
-                                           link_target="https://wazestatus.wordpress.com")]
+                hangups.ChatMessageSegment("https://status.waze.com",
+                                           link_target="https://status.waze.com")]
 
     yield from bot.coro_send_message(event.conv, segments, context={"parser": True})
