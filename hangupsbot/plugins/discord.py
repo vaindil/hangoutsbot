@@ -193,14 +193,14 @@ async def on_message(message):
     if message.author.id == CLIENT.user.id:
         return
 
+    # Only send regular messages
+    if message.type != discord.MessageType.default:
+        return
+
     LOGGER.info("message from discord in {}/{} ({})".format(message.channel.guild, message.channel.name, message.channel.id))
 
     # Don't send commands through the relay
     if await parse_command("discord", message.channel.id, message.clean_content):
-        return
-
-    # Only send regular messages
-    if message.type != discord.MessageType.default:
         return
 
     content = message.clean_content
