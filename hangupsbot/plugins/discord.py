@@ -29,7 +29,7 @@ Repeat the last two steps for each discord channel/hangout channel you want to s
 
 '''
 
-import asyncio, logging
+import asyncio, logging, re
 
 import discord
 
@@ -208,7 +208,7 @@ async def on_message(message):
     if message.author.nick:
         author = str(message.author.nick)
     new_message = "<b>{}:</b> {}".format(author, content)
-    LOGGER.info(new_message)
+    LOGGER.info(re.sub("(<b>)|(</b>)", "", new_message))
     if str(message.channel.id) in CLIENT.relay_map["discord"]:
         sentToChannelIDs = []
         for convid in CLIENT.relay_map["discord"][str(message.channel.id)]:
