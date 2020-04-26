@@ -189,11 +189,11 @@ async def parse_command(source, source_id, content):
 async def on_message(message):
     """Discord message handler"""
 
-    LOGGER.info("message from discord in {}/{} ({})".format(message.channel.guild, message.channel.name, message.channel.id))
-
     # Prevent message loopback
     if message.author.id == CLIENT.user.id:
         return
+
+    LOGGER.info("message from discord in {}/{} ({})".format(message.channel.guild, message.channel.name, message.channel.id))
 
     # Don't send commands through the relay
     if await parse_command("discord", message.channel.id, message.clean_content):
