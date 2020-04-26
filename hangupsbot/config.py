@@ -25,8 +25,8 @@ class Config(collections.MutableMapping):
                 json.load(f)
         except IOError:
             return False
-        except ValueError:
-            logger.warning("{} is corrupted, aborting backup".format(self.filename))
+        except ValueError as ve:
+            logger.warning("{} is corrupted, aborting backup. {}".format(self.filename, ve))
             return False
 
         existing = sorted(glob.glob(self.filename + ".*.bak"))
