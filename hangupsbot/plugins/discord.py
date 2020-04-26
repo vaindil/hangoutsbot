@@ -206,7 +206,7 @@ async def on_message(message):
     if message.author.nick:
         author = str(message.author.nick)
     new_message = "<b>{}:</b> {}".format(author, content)
-    LOGGER.info("message from discord in {} ({})".format(message.channel.name, message.channel.id))
+    LOGGER.info("message from discord in {}/{} ({})".format(message.channel.guild, message.channel.name, message.channel.id))
     LOGGER.info(new_message)
     if str(message.channel.id) in CLIENT.relay_map["discord"]:
         sentToChannelIDs = []
