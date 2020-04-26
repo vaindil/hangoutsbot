@@ -21,131 +21,248 @@ Creating a Discord bot
 	
 Linking the Hangout and Discord channels:
 -----------------------------------------
-8.  Join the bot to the channel ni discord you want to link to HO's.
+8.  Join the bot to the channel in discord you want to link to HO's.
 9.  Say "whereami" in a discord channel that the bot is in and it should respond with the channel id (formated like 123456789123456789)
-10. Say "/bot dsync CHANNEL_ID" in the hangout you want to sync to the discord channel.
+10. Say "!addrelay CHANNEL_ID" in the hangout you want to sync to the discord channel.
 
 Repeat the last two steps for each discord channel/hangout channel you want to sync.
 
 '''
 
-import plugins
+import asyncio, logging
+
 import discord
-import asyncio
-import logging
-import aiohttp
-import io
-import copy
-import re
 
-logger = logging.getLogger(__name__)
+import plugins
 
-client = discord.Client()
-_bot = None
-sending = {}
-emote_re = re.compile('<(:.*?:)\d*>', re.I | re.M | re.U)
+CLIENT = discord.Client()
+logging.basicConfig(level=logging.INFO)
+LOGGER = logging.getLogger(__name__)
 
-already_seen_discord_messages = []
+async def send_message_invariant(source, source_id, message):
+    """Sends a message to either discord or hangouts"""
+    LOGGER.info("Sending message to %s conversation %s: %s", source, source_id, message)
+    if source == "discord":
+        channel = CLIENT.get_channel(source_id)
+        #await CLIENT.send_message(CLIENT.get_channel(source_id), message)
+        await channel.send(message)
+    elif source == "hangouts":
+        await CLIENT.hangouts_bot.coro_send_message(source_id, message)
 
-@client.event
-@asyncio.coroutine
-def on_ready():
-    logger.debug('Logged into discord as {} {}'.format(client.user.name, client.user.id))
+async def do_help(source, source_id):
+    """Send a list of commands back to the sender"""
+    help_message = "!addrelay <other_id>, !delrelay <other_id>, !getid, !help"
+    await send_message_invariant(source, source_id, help_message)
 
-@client.event
-@asyncio.coroutine
-def on_message(message):
-    if message.author == client.user:
+async def do_getid(source, source_id):
+    """Send this conversation's id back to the sender"""
+    await send_message_invariant(source, source_id, "This {} channel id: {}".format(source, source_id))
+
+async def do_addrelay(source, source_id, **args):
+    """Add a relay from this conversation to the opposite type of conversation"""
+    target = "discord" if source == "hangouts" else "hangouts"
+    # error: didn't specify target id
+    if "arg_string" not in args:
+        await send_message_invariant(source, source_id, "usage: !addrelay <{}_id>".format(target))
         return
-    global already_seen_discord_messages
-    if message.id in already_seen_discord_messages:
+    arg_string = args["arg_string"]
+    target_id = arg_string.split(" ", 1)[0]
+    LOGGER.info("relay add request received from %s channel %s to %s channel %s",
+                source,
+                source_id,
+                target,
+                target_id)
+    relay_map = CLIENT.hangouts_bot.memory.get_by_path(["discord_relay_map"])
+    if source_id not in relay_map[source]:
+        relay_map[source][source_id] = {}
+    if target_id not in relay_map[target]:
+        relay_map[target][target_id] = {}
+    relay_map[source][source_id][target_id] = True
+    relay_map[target][target_id][source_id] = True
+    CLIENT.hangouts_bot.memory.set_by_path(["discord_relay_map"], relay_map)
+    CLIENT.relay_map = relay_map
+    await send_message_invariant(source, source_id, "Relay added to {} channel {}.".format(target, target_id))
+
+async def do_delrelay(source, source_id, **args):
+    """Delete a relay"""
+    target = "discord" if source == "hangouts" else "hangouts"
+    if "arg_string" not in args:
+        await send_message_invariant(source, source_id, "usage: !delrelay <{}_id>".format(target))
+    arg_string = args["arg_string"]
+    target_id = arg_string.split(" ", 1)[0]
+    if isinstance(source_id, str):
+        source_id = str(source_id)
+    LOGGER.info("Relay delete request received from %s channel %s to %s channel %s.",
+                source,
+                source_id,
+                target,
+                target_id)
+    relay_map = CLIENT.hangouts_bot.memory.get_by_path(["discord_relay_map"])
+    if source_id not in relay_map[source]:
+        await send_message_invariant(source, source_id, "No relays found for this channel.")
         return
-    already_seen_discord_messages.append(message.id)
-    global sending
-    #if 'whereami' in message.content:
-    #    yield from client.send_message(message.channel, message.channel.id)
-    logger.debug("message in discord channel {} - {}, {}".format(message.channel.id, message.system_content, message.type))
-    conv_config = _bot.config.get_by_path(["conversations"])
-    for conv_id, config in conv_config.items():
-        if config.get("discord_sync") == message.channel.id:
-            msg = "<b>{}</b>: {}".format(message.author.display_name, emote_re.sub(r"\1", message.clean_content))
-            if conv_id not in sending:
-              sending[conv_id] = 0
-            sending[conv_id] += 1
-            yield from _bot.coro_send_message(conv_id, msg, context={'discord': True})
-
-            for a in message.attachments:
-              r = yield from aiohttp.request('get', a['url'])
-              raw = yield from r.read()
-              image_data = io.BytesIO(raw)
-              logger.debug("uploading: {}".format(a['url']))
-              sending[conv_id] += 1
-              image_id = yield from _bot._client.upload_image(image_data, filename=a['filename'])
-              yield from _bot.coro_send_message(conv_id, None, image_id=image_id, context={'discord': True})
-
-def _initialise(bot):
-    global _bot
-    _bot = bot
-    token = bot.get_config_option('discord_token')
-    if not token:
-        logger.error("discord_token not set")
+    if target_id not in relay_map[target]:
+        await send_message_invariant(source, source_id, "There are no relays to that channel.")
         return
+    if target_id not in relay_map[source][source_id] or source_id not in relay_map[target][target_id]:
+        msg = "There is no relay between this channel and {} channel {}.".format(target, target_id)
+        await send_message_invariant(source, source_id, msg)
+        return
+    del relay_map[source][source_id][target_id]
+    if not relay_map[source][source_id]:
+        del relay_map[source][source_id]
+    del relay_map[target][target_id][source_id]
+    if not relay_map[target][target_id]:
+        del relay_map[target][target_id]
+    CLIENT.hangouts_bot.memory.set_by_path(["discord_relay_map"], relay_map)
+    CLIENT.relay_map = relay_map
+    await send_message_invariant(source, source_id, "Relay between {} channel {} and this channel deleted.".format(target, target_id))
 
-    plugins.register_handler(_handle_hangout_message, type="allmessages")
-    plugins.register_admin_command(['dsync'])
+async def do_relaydump(source, source_id):
+    """Print a list of relay maps"""
+    msg = "Here are all of my relays:"
+    await send_message_invariant(source, source_id, msg)
+    await send_message_invariant(source, source_id, str(CLIENT.relay_map))
 
-    try:
-        client.run(token)
-    except RuntimeError:
-        # client.run will try start an event loop, however this will fail as hangoutsbot will have already started one
-        # this isn't anything to worry about
-        pass
+COMMAND_DICT = {
+    "!help": do_help,
+    "!getid": do_getid,
+    "!addrelay": do_addrelay,
+    "!delrelay": do_delrelay,
+    "!relaydump": do_relaydump
+}
 
-def _handle_hangout_message(bot, event, command):
-    global sending
-    discord_channel = bot.get_config_suboption(event.conv_id, "discord_sync")
-    if discord_channel:
-        channel = client.get_channel(discord_channel)
-        if channel:
-            if sending.get(event.conv_id) and ':' in event.text:
-                # this hangout message originated in discord
-                sending[event.conv_id] -= 1
-                bits = event.text.split(':', 1)
-                fake_event = copy.copy(event)
-                fake_event._external_source = bits[0] + '@discord'
-                msg = bits[1].strip()
-                fake_event.text = msg
-                logger.debug('attempting to execute %s', msg)
-                yield from _bot._handlers.handle_command(fake_event)
-                yield from plugins.mentions._handle_mention(bot, fake_event, command)
-            else:
-                if event.from_bot:
-                    yield from client.send_message(channel, event.text)
-                else:
-                    fullname = event.user.full_name
-                    mentions = dict([(word.strip('@'),set()) for word in set(event.text.split()) if word.startswith('@') and word != '@all'])
-                    msg = event.text
-                    for m in mentions:
-                      for member in client.get_all_members():
-                        permissions = channel.permissions_for(member)
-                        if permissions.read_messages and m.lower() in member.display_name.lower():
-                          logger.debug("{} matches ({},{},{}) in {}".format(m, member.id, member.name, member.display_name, channel.name))
-                          mentions[m].add(member.id)
-                      if len(mentions[m]) == 1:
-                        msg = msg.replace('@' + m, '<@{}>'.format(mentions[m].pop()))
-                    msg = msg.replace('@all', '@everyone')
-                    msg = "**{}**: {}".format(fullname, msg)
-                    yield from client.send_message(channel, msg)
+def _initialize(bot):
+    """Hangoutsbot plugin initialization function"""
+    plugins.register_handler(_received_message, type="message", priority=50)
+    CLIENT.hangouts_bot = bot
+    _start_discord_account(bot)
+    _init_discord_map(bot)
+
+def _start_discord_account(bot):
+    """Log in to discord using token stored in config file"""
+    loop = asyncio.get_event_loop()
+    LOGGER.info("start discord account here")
+    discord_config = bot.get_config_option('discord')
+    token = discord_config['token']
+    coro = CLIENT.start(token)
+    asyncio.run_coroutine_threadsafe(coro, loop)
+
+def _init_discord_map(bot):
+    """Creates a relay map if it doesn't exist and reads it into memory"""
+    if not bot.memory.exists(["discord_relay_map"]):
+        bot.memory.set_by_path(["discord_relay_map"], {})
+    relay_map = bot.memory.get_by_path(["discord_relay_map"])
+    if "discord" not in relay_map:
+        relay_map["discord"] = {}
+    if "hangouts" not in relay_map:
+        relay_map["hangouts"] = {}
+    bot.memory.set_by_path(["discord_relay_map"], relay_map)
+    CLIENT.relay_map = relay_map
+    LOGGER.info("Generated relay map")
+    LOGGER.info(relay_map)
+
+@CLIENT.event
+async def on_ready():
+    """Discord ready handler"""
+    LOGGER.info("Logged in as")
+    LOGGER.info(CLIENT.user.name)
+    LOGGER.info(CLIENT.user.id)
+    LOGGER.info("------")
+
+async def parse_command(source, source_id, content):
+    """Parse commands. Supported commands are !getid, !addrelay, !delrelay, !help
+    Return True if a command was found"""
+    LOGGER.info("content is %s", content)
+    tokens = content.split(" ", 1)
+    command = tokens[0]
+    if command in COMMAND_DICT:
+        LOGGER.debug("command is %s", command)
+        if len(tokens) == 1:
+            await COMMAND_DICT[command](source, source_id)
         else:
-            logger.debug('channel {} not found'.format(discord_channel))
+            await COMMAND_DICT[command](source, source_id, arg_string=tokens[1])
+        return True
+    return False
 
-def dsync(bot, event, discord_channel=None):
-    ''' Sync a hangout to a discord channel. Usage - "/bot dsync 123456789" Say "whereami" in the channel once the bot has been added to get the channel id" '''
-    try:
-      bot.config.set_by_path(["conversations", event.conv_id, "discord_sync"], discord_channel)
-    except KeyError:
-      bot.config.set_by_path(["conversations", event.conv_id], {"discord_sync": discord_channel})
-    bot.config.save()
-    msg = "Synced {} to {}".format(bot.conversations.get_name(event.conv), discord_channel)
-    yield from bot.coro_send_message(event.conv_id, msg)
-    logger.debug(msg)
+@CLIENT.event
+async def on_message(message):
+    """Discord message handler"""
+
+    # Prevent message loopback
+    if message.author.id == CLIENT.user.id:
+        return
+
+    # Don't send commands through the relay
+    if await parse_command("discord", message.channel.id, message.clean_content):
+        return
+
+    # Only send regular messages
+    if message.type != discord.MessageType.default:
+        return
+
+    content = message.clean_content
+    author = str(message.author).rsplit('#', 1)[0]
+    if message.author.nick:
+        author = str(message.author.nick)
+    new_message = "<b>{}:</b> {}".format(author, content)
+    LOGGER.info("message from discord in {} ({})".format(message.channel.name, message.channel.id))
+    LOGGER.info(new_message)
+    if str(message.channel.id) in CLIENT.relay_map["discord"]:
+        sentToChannelIDs = []
+        for convid in CLIENT.relay_map["discord"][str(message.channel.id)]:
+            if convid in sentToChannelIDs:
+                break
+            LOGGER.info("sending to {}".format(convid))
+            await CLIENT.hangouts_bot.coro_send_message(convid, new_message)
+            sentToChannelIDs.append(convid)
+
+def encode_mentions(message, server):
+    """Encode mentions so they're not just displayed as plaintext"""
+    tokens = ['<@' + server.get_member_named(token[1:]).id + '>'
+        if token.startswith('@') and server.get_member_named(token[1:]) 
+        else token 
+    for token in message.split()]
+    return ' '.join(tokens)
+
+def _received_message(bot, event, command):
+    """Hangouts message handler"""
+    command = yield from parse_command("hangouts", event.conv_id, event.text)
+    if command:
+        return
+    new_message = "**{}**: {}".format(event.user.full_name, event.text)
+    LOGGER.info("message from hangouts conversation %s", event.conv_id)
+    LOGGER.info(new_message)
+
+    # Send message to discord
+    if event.conv_id in CLIENT.relay_map["hangouts"]:
+        sentToChannelIDs = []
+        for conv_id in CLIENT.relay_map["hangouts"][event.conv_id]:
+            try:
+                chan = CLIENT.get_channel(int(conv_id))
+            except ValueError as ex:
+                LOGGER.warn('"%s" cannot be converted to an int for channel ID purposes: %s' % (conv_id, ex))
+
+
+            if chan is None:
+                continue
+            if chan in sentToChannelIDs:
+                break
+
+            try:
+                server = chan.server
+            except AttributeError:
+                server = None
+
+
+            # Properly encode mentions
+            if server != None:
+                new_message = encode_mentions(new_message, server)
+
+            # Only send to text channels, not voice and other
+            if chan.type == discord.ChannelType.text:
+                LOGGER.info("sending to discord channel {}".format(chan))
+                yield from chan.send(new_message)
+                sentToChannelIDs.append(chan)
+            else:
+                LOGGER.warn("{} is not a text channel id".format(chan))
